@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/jamesjarvis/mappyboi/pkg/maptemplate"
 	"github.com/jamesjarvis/mappyboi/pkg/models"
 	"github.com/jamesjarvis/mappyboi/pkg/parser"
 	"github.com/urfave/cli/v2"
@@ -38,27 +39,22 @@ func main() {
 		Action: func(c *cli.Context) error {
 			fmt.Println("Mappyboi v0.1")
 
-			googleParser := &parser.GoogleLocationHistory{}
+			parsers := []parser.Parser{}
+
 			if c.IsSet(googleFlag) {
-				googleParser = &parser.GoogleLocationHistory{
+				parsers = append(parsers, &parser.GoogleLocationHistory{
 					Filepath: c.Path(googleFlag),
-				}
+				})
 			}
 
-			gpxParsers := []*parser.GPXFile{}
 			if c.IsSet(gpxFlag) {
 				gpxs, err := parser.FindGPXFiles(c.Path(gpxFlag))
 				if err != nil {
 					return err
 				}
-				gpxParsers = gpxs
-			}
-
-			// TODO: Clean this up, couldn't get the variadic thing to stop complaining.
-			parsers := []parser.Parser{}
-			parsers = append(parsers, googleParser)
-			for _, p := range gpxParsers {
-				parsers = append(parsers, p)
+				for _, p := range gpxs {
+					parsers = append(parsers, p)
+				}
 			}
 
 			allData, err := parser.ParseAll(parsers...)
@@ -68,7 +64,7 @@ func main() {
 
 			PrintStats(allData)
 
-			return nil
+			return maptemplate.GenerateHTML(allData)
 		},
 	}
 
