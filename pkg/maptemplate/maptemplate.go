@@ -65,7 +65,7 @@ const maptemplate = `
     var mappyboi = L.map(
         "mappyboi",
         {
-            center: [51.297736, 1.058397],
+            center: [48.0673, 12.8633],
             crs: L.CRS.EPSG3857,
             zoom: 6,
             zoomControl: true,
