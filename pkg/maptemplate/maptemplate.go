@@ -8,8 +8,7 @@ import (
 	"github.com/jamesjarvis/mappyboi/pkg/models"
 )
 
-const maptemplate = `
-<!DOCTYPE html>
+const maptemplate = `<!DOCTYPE html>
 <head>    
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -87,13 +86,13 @@ const maptemplate = `
 </script>
 `
 
-func GenerateHTML(data *models.Data) error {
+func GenerateHTML(filepath string, data *models.Data) error {
 	tmpl, err := template.New("test").Parse(maptemplate)
 	if err != nil {
 		return err
 	}
 
-	f, err := os.Create("map.html")
+	f, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}

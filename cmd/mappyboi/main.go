@@ -12,8 +12,10 @@ import (
 )
 
 const (
-	googleFlag = "location_history"
-	gpxFlag    = "gpx_folder"
+	googleFlag        = "location_history"
+	gpxFlag           = "gpx_folder"
+	outputFlag        = "output_file"
+	defaultOutputFile = "map.html"
 )
 
 func PrintStats(data *models.Data) {
@@ -26,41 +28,59 @@ func main() {
 		Usage: "Make a heatmap out of Google Takeout / Apple Health exports",
 		Flags: []cli.Flag{
 			&cli.PathFlag{
-				Name:    googleFlag,
-				Aliases: []string{"lh"},
-				Usage:   "Load Google Location History from `FILE`",
+				Name:      googleFlag,
+				Aliases:   []string{"lh"},
+				Usage:     "Load Google Location History from `FILE`",
+				TakesFile: true,
 			},
-			&cli.PathFlag{
+			&cli.StringSliceFlag{
 				Name:    gpxFlag,
 				Aliases: []string{"gpx"},
-				Usage:   "Load GPX files from from `FOLDER`",
+				Usage:   "Load GPX files from `FOLDER`",
+			},
+			&cli.PathFlag{
+				Name:      outputFlag,
+				Aliases:   []string{"o"},
+				Usage:     "Output `FILE` to export heatmap to. Must be .html format",
+				TakesFile: true,
 			},
 		},
 		Action: func(c *cli.Context) error {
 			fmt.Println("Mappyboi v0.1")
 
+			// Locate data from flags
 			parsers := []parser.Parser{}
-
 			if c.IsSet(googleFlag) {
 				parsers = append(parsers, &parser.GoogleLocationHistory{
 					Filepath: c.Path(googleFlag),
 				})
 			}
-
 			if c.IsSet(gpxFlag) {
-				gpxs, err := parser.FindGPXFiles(c.Path(gpxFlag))
-				if err != nil {
-					return err
-				}
-				for _, p := range gpxs {
-					parsers = append(parsers, p)
+				gpxs := c.StringSlice(gpxFlag)
+				for _, g := range gpxs {
+					gpxs, err := parser.FindGPXFiles(g)
+					if err != nil {
+						return err
+					}
+					for _, p := range gpxs {
+						parsers = append(parsers, p)
+					}
 				}
 			}
 
+			// Exit early if no data passed in
 			if len(parsers) == 0 {
+				fmt.Println("You need some data for a heatmap, silly!")
 				return nil
 			}
 
+			// Get the output file path
+			outputPath := defaultOutputFile
+			if c.IsSet(outputFlag) {
+				outputPath = c.Path(outputFlag)
+			}
+
+			// mmm consume the data
 			allData, err := parser.ParseAll(parsers...)
 			if err != nil {
 				return err
@@ -68,7 +88,7 @@ func main() {
 
 			PrintStats(allData)
 
-			return maptemplate.GenerateHTML(allData)
+			return maptemplate.GenerateHTML(outputPath, allData)
 		},
 	}
 
