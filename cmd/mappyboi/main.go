@@ -57,6 +57,10 @@ func main() {
 				}
 			}
 
+			if len(parsers) == 0 {
+				return nil
+			}
+
 			allData, err := parser.ParseAll(parsers...)
 			if err != nil {
 				return err

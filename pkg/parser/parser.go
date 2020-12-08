@@ -55,7 +55,7 @@ func (p *GPXFile) Parse() (*models.Data, error) {
 
 	// Reduce number of points in GPX track.
 	g.ReduceGpxToSingleTrack()
-	g.SimplifyTracks(1.5)
+	g.SimplifyTracks(0.5)
 
 	// Add to data object.
 	data := &models.Data{
