@@ -5,9 +5,15 @@
 Generates a heatmap of where you have been, using data from Google Takeout and Apple Health Export / Strava (or other assorted GPX files).
 You can specify multiple folders of gpx files (for example if you have a strava folder and an apple health folder).
 
-Example usage:
+## Installation
 
 ```bash
-go run cmd/mappyboi/main.go --location_history="/path/to/Location History.json" --gpx="/path/to/workout-routes" --gpx="/other/path/to/workout-routes" --o="heatmap.html"
+go install github.com/jamesjarvis/mappyboi
+```
+
+## Usage
+
+```bash
+mappyboi --location_history="/path/to/Location History.json" --gpx="/path/to/workout-routes" --gpx="/other/path/to/workout-routes" --o="heatmap.html"
 open heatmap.html
 ```

@@ -16,6 +16,7 @@ const (
 	gpxFlag           = "gpx_folder"
 	outputFlag        = "output_file"
 	defaultOutputFile = "map.html"
+	version 					= "v1.0.1"
 )
 
 func PrintStats(data *models.Data) {
@@ -46,7 +47,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			fmt.Println("Mappyboi v0.1")
+			fmt.Println("Mappyboi " + version)
 
 			// Locate data from flags
 			parsers := []parser.Parser{}
