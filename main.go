@@ -7,6 +7,7 @@ import (
 
 	_ "embed"
 
+	"github.com/jamesjarvis/mappyboi/pkg/conversions"
 	"github.com/jamesjarvis/mappyboi/pkg/maptemplate"
 	"github.com/jamesjarvis/mappyboi/pkg/models"
 	"github.com/jamesjarvis/mappyboi/pkg/parser"
@@ -21,6 +22,7 @@ const (
 	gpxFlag           = "gpx_folder"
 	outputFlag        = "output_file"
 	defaultOutputFile = "map.html"
+	minDistanceFlag   = "min_distance"
 )
 
 func PrintStats(data *models.Data) {
@@ -48,6 +50,11 @@ func main() {
 				Aliases:   []string{"o"},
 				Usage:     "Output `FILE` to export heatmap to. Must be .html format",
 				TakesFile: true,
+			},
+			&cli.Float64Flag{
+				Name:    minDistanceFlag,
+				Aliases: []string{"min"},
+				Usage:   "If you struggle to open the file in a browser due to too many points, reduce the number of points by increasing this value.",
 			},
 			cli.VersionFlag,
 		},
@@ -90,6 +97,17 @@ func main() {
 			allData, err := parser.ParseAll(parsers...)
 			if err != nil {
 				return fmt.Errorf("error parsing data: %w", err)
+			}
+
+			// Simplify routes to minimise number of points.
+			// Unfortunately leaflet will stack overflow after around 600k points :'(
+
+			if c.IsSet(minDistanceFlag) {
+				minDistance := c.Float64(minDistanceFlag)
+				allData, err = conversions.ReducePoints(allData, minDistance)
+				if err != nil {
+					return fmt.Errorf("failed to reduce points to %f: %w", minDistance, err)
+				}
 			}
 
 			PrintStats(allData)
