@@ -3,6 +3,8 @@ package parser
 import (
 	"fmt"
 
+	"log"
+
 	"github.com/jamesjarvis/mappyboi/pkg/models"
 )
 
@@ -16,6 +18,7 @@ func ParseAll(parsers ...Parser) (*models.Data, error) {
 			return nil, fmt.Errorf("failed to parse '%s': %w", p.String(), err)
 		}
 		data.GoLocations = append(data.GoLocations, tempData.GoLocations...)
+		log.Printf("%s parsed, %d/%d points...\n", p.String(), len(tempData.GoLocations), len(data.GoLocations))
 	}
 	return data, nil
 }
