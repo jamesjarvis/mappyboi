@@ -5,18 +5,22 @@ import (
 	"log"
 	"os"
 
+	_ "embed"
+
 	"github.com/jamesjarvis/mappyboi/pkg/maptemplate"
 	"github.com/jamesjarvis/mappyboi/pkg/models"
 	"github.com/jamesjarvis/mappyboi/pkg/parser"
 	"github.com/urfave/cli/v2"
 )
 
+//go:embed VERSION
+var version string
+
 const (
 	googleFlag        = "location_history"
 	gpxFlag           = "gpx_folder"
 	outputFlag        = "output_file"
 	defaultOutputFile = "map.html"
-	version           = "v1.0.1"
 )
 
 func PrintStats(data *models.Data) {
@@ -45,9 +49,10 @@ func main() {
 				Usage:     "Output `FILE` to export heatmap to. Must be .html format",
 				TakesFile: true,
 			},
+			cli.VersionFlag,
 		},
 		Action: func(c *cli.Context) error {
-			fmt.Println("Mappyboi " + version)
+			fmt.Println("Mappyboi " + c.App.Version)
 
 			// Locate data from flags
 			parsers := []parser.Parser{}
@@ -93,7 +98,14 @@ func main() {
 		},
 	}
 
+	app.Version = version
 	app.EnableBashCompletion = true
+	app.Authors = []*cli.Author{
+		{
+			Name:  "James Jarvis",
+			Email: "git@jamesjarvis.io",
+		},
+	}
 
 	err := app.Run(os.Args)
 	if err != nil {
