@@ -19,13 +19,20 @@ func GoogleDataToData(gd *models.GoogleData) (*models.Data, error) {
 	}
 
 	for _, gloc := range gd.Locations {
-		ms, err := strconv.ParseInt(gloc.TimestampMs, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing timestampMs: %w", err)
+		var t time.Time
+
+		if gloc.TimestampMs != "" {
+			ms, err := strconv.ParseInt(gloc.TimestampMs, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing timestampMs: %w", err)
+			}
+			t = time.Unix(0, ms*int64(time.Millisecond))
+		} else {
+			t = gloc.Timestamp
 		}
 
 		data.GoLocations = append(data.GoLocations, &models.GoLocation{
-			Time:             time.Unix(0, ms*int64(time.Millisecond)),
+			Time:             t,
 			Latitude:         E7ToStandard(gloc.LatitudeE7),
 			Longitude:        E7ToStandard(gloc.LongitudeE7),
 			Accuracy:         float64(gloc.Accuracy),
