@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -23,7 +24,7 @@ func FindGPXFiles(root string) ([]*GPXFile, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not find gpx files from root '%s': %w", root, err)
 	}
 	return gpxfiles, nil
 }
@@ -31,7 +32,7 @@ func FindGPXFiles(root string) ([]*GPXFile, error) {
 func Load(filepath string) (*os.File, error) {
 	contents, err := os.Open(filepath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open '%s': %w", filepath, err)
 	}
 	return contents, nil
 }

@@ -16,7 +16,7 @@ const (
 	gpxFlag           = "gpx_folder"
 	outputFlag        = "output_file"
 	defaultOutputFile = "map.html"
-	version 					= "v1.0.1"
+	version           = "v1.0.1"
 )
 
 func PrintStats(data *models.Data) {
@@ -61,7 +61,7 @@ func main() {
 				for _, g := range gpxs {
 					gpxs, err := parser.FindGPXFiles(g)
 					if err != nil {
-						return err
+						return fmt.Errorf("error finding gpx files for %s: %w", g, err)
 					}
 					for _, p := range gpxs {
 						parsers = append(parsers, p)
@@ -84,7 +84,7 @@ func main() {
 			// mmm consume the data
 			allData, err := parser.ParseAll(parsers...)
 			if err != nil {
-				return err
+				return fmt.Errorf("error parsing data: %w", err)
 			}
 
 			PrintStats(allData)

@@ -2,6 +2,7 @@ package maptemplate
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"text/template"
 
@@ -103,12 +104,12 @@ const maptemplate = `<!DOCTYPE html>
 func GenerateHTML(filepath string, data *models.Data) error {
 	tmpl, err := template.New("test").Parse(maptemplate)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse html template: %w", err)
 	}
 
 	f, err := os.Create(filepath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create file at %s: %w", filepath, err)
 	}
 	defer f.Close()
 	w := bufio.NewWriter(f)
@@ -116,7 +117,7 @@ func GenerateHTML(filepath string, data *models.Data) error {
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to execute html template: %w", err)
 	}
 	return nil
 }

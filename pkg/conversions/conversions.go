@@ -1,6 +1,7 @@
 package conversions
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -20,7 +21,7 @@ func GoogleDataToData(gd *models.GoogleData) (*models.Data, error) {
 	for _, gloc := range gd.Locations {
 		ms, err := strconv.ParseInt(gloc.TimestampMs, 10, 64)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error parsing timestampMs: %w", err)
 		}
 
 		data.GoLocations = append(data.GoLocations, &models.GoLocation{

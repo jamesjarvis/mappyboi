@@ -2,6 +2,7 @@ package parser
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/jamesjarvis/mappyboi/pkg/conversions"
 	"github.com/jamesjarvis/mappyboi/pkg/models"
@@ -33,7 +34,7 @@ func (p *GoogleLocationHistory) Parse() (*models.Data, error) {
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode json file '%s': %w", p.Filepath, err)
 	}
 
 	return conversions.GoogleDataToData(&data)
