@@ -2,8 +2,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.2 h1:p1EgwI/C7NhT0JmVkwCD2ZBK8j4aeHQX2pMHH
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/jamesjarvis/massivelyconcurrentsystems v0.0.0-20220704224348-0ec39a6a7961 h1:9RK+Y3fO4DRdYmZ/USdoE90/9H9YyY1Wv+qrq89jUno=
-github.com/jamesjarvis/massivelyconcurrentsystems v0.0.0-20220704224348-0ec39a6a7961/go.mod h1:iP6trICGTPXrFrb6QspFH6hOXZV2hzyncb6NWk+NFxw=
+github.com/jamesjarvis/massivelyconcurrentsystems v0.0.0-20220724083906-c1384b705901 h1:+soxvrlyBOnViO6D0fnSS/p80a5Is9Hgjy0gxvKAnlM=
+github.com/jamesjarvis/massivelyconcurrentsystems v0.0.0-20220724083906-c1384b705901/go.mod h1:iP6trICGTPXrFrb6QspFH6hOXZV2hzyncb6NWk+NFxw=
 github.com/joeshaw/gengen v0.0.0-20190604015154-c77d87825f5a/go.mod h1:v2qvRL8Xwk4OlARK6gPlf2JreZXzv0dYp/8+kUJ0y7Q=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
