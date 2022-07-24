@@ -33,7 +33,7 @@ func ParseAll(parsers ...Parser) (*models.Data, error) {
 
 		p.Data = tempData
 
-		// log.Printf("Parsed %d points from %s...\n", len(tempData.GoLocations), p.parser.String())
+		log.Printf("Parsed %d points from %s...\n", len(tempData.GoLocations), p.parser.String())
 		return nil
 	}
 
