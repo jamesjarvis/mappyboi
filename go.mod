@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/jamesjarvis/massivelyconcurrentsystems v0.0.0-20220724083906-c1384b705901
 	github.com/tkrajina/gpxgo v1.2.1
-	github.com/urfave/cli/v2 v2.10.3
+	github.com/urfave/cli/v2 v2.11.1
 )
 
 require (
