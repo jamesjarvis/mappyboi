@@ -1,4 +1,4 @@
-package parser
+package gpx
 
 import (
 	"fmt"
