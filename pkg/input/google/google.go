@@ -1,5 +1,13 @@
 package google
 
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+
+	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
+)
+
 type LocationHistory struct {
 	Filepath string
 }
@@ -8,20 +16,20 @@ func (p *LocationHistory) String() string {
 	return p.Filepath
 }
 
-func (p *LocationHistory) Parse() (*models.Data, error) {
-	var data models.GoogleData
+func (p *LocationHistory) Parse() (types.LocationHistory, error) {
+	var data GoogleData
 
-	file, err := Load(p.Filepath)
+	file, err := os.Open(p.Filepath)
 	if err != nil {
-		return nil, err
+		return types.LocationHistory{}, err
 	}
 	defer file.Close()
 
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode json file '%s': %w", p.Filepath, err)
+		return types.LocationHistory{}, fmt.Errorf("failed to decode json file '%s': %w", p.Filepath, err)
 	}
 
-	return conversions.GoogleDataToData(&data)
+	return GoogleDataToData(data)
 }

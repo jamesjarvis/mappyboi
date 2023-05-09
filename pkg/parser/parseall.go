@@ -8,7 +8,7 @@ import (
 
 	"log"
 
-	"github.com/jamesjarvis/mappyboi/pkg/models"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
 	pool "github.com/jamesjarvis/massivelyconcurrentsystems/pool"
 )
 
@@ -17,11 +17,11 @@ type parserWork struct {
 	wg     *sync.WaitGroup
 
 	Error error
-	Data  *models.Data
+	Data  types.LocationHistory
 }
 
-func ParseAll(parsers ...Parser) (*models.Data, error) {
-	data := &models.Data{}
+func ParseAll(parsers ...Parser) (types.LocationHistory, error) {
+	data := types.LocationHistory{}
 
 	workerFunc := func(p *parserWork) error {
 		defer p.wg.Done()
@@ -33,7 +33,7 @@ func ParseAll(parsers ...Parser) (*models.Data, error) {
 
 		p.Data = tempData
 
-		log.Printf("Parsed %d points from %s...\n", len(tempData.GoLocations), p.parser.String())
+		log.Printf("Parsed %d points from %s...\n", len(tempData.Data), p.parser.String())
 		return nil
 	}
 
@@ -56,7 +56,7 @@ func ParseAll(parsers ...Parser) (*models.Data, error) {
 		work = append(work, pw)
 		err := dispatcher.Put(context.Background(), pw)
 		if err != nil {
-			return nil, fmt.Errorf("failed to schedule parser '%s': %w", p.String(), err)
+			return types.LocationHistory{}, fmt.Errorf("failed to schedule parser '%s': %w", p.String(), err)
 		}
 	}
 
@@ -65,13 +65,13 @@ func ParseAll(parsers ...Parser) (*models.Data, error) {
 	// Collect results from work.
 	for _, pw := range work {
 		if pw.Error != nil {
-			return nil, pw.Error
+			return types.LocationHistory{}, pw.Error
 		}
 
-		data.GoLocations = append(data.GoLocations, pw.Data.GoLocations...)
+		data.Insert(pw.Data.Data...)
 	}
 
-	log.Printf("Collected %d points from %d parsers\n", len(data.GoLocations), len(work))
+	log.Printf("Collected %d points from %d parsers\n", len(data.Data), len(work))
 
 	return data, nil
 }

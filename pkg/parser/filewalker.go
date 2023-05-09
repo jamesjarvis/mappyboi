@@ -28,11 +28,3 @@ func FindGPXFiles(root string) ([]*GPXFile, error) {
 	}
 	return gpxfiles, nil
 }
-
-func Load(filepath string) (*os.File, error) {
-	contents, err := os.Open(filepath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open '%s': %w", filepath, err)
-	}
-	return contents, nil
-}

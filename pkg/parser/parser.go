@@ -1,43 +1,15 @@
 package parser
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/jamesjarvis/mappyboi/pkg/conversions"
 	"github.com/jamesjarvis/mappyboi/pkg/models"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
 	"github.com/tkrajina/gpxgo/gpx"
 )
 
 type Parser interface {
 	String() string
-	Parse() (*models.Data, error)
-}
-
-type GoogleLocationHistory struct {
-	Filepath string
-}
-
-func (p *GoogleLocationHistory) String() string {
-	return p.Filepath
-}
-
-func (p *GoogleLocationHistory) Parse() (*models.Data, error) {
-	var data models.GoogleData
-
-	file, err := Load(p.Filepath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode json file '%s': %w", p.Filepath, err)
-	}
-
-	return conversions.GoogleDataToData(&data)
+	Parse() (types.LocationHistory, error)
 }
 
 type GPXFile struct {
