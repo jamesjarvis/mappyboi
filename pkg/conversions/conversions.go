@@ -1,4 +1,4 @@
-// package conversions
+package conversions
 
 // import (
 // 	"sort"
