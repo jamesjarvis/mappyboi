@@ -1,8 +1,9 @@
-module github.com/jamesjarvis/mappyboi
+module github.com/jamesjarvis/mappyboi/v2
 
-go 1.18
+go 1.20
 
 require (
+	github.com/jamesjarvis/mappyboi v1.2.0
 	github.com/jamesjarvis/massivelyconcurrentsystems v0.0.0-20220724083906-c1384b705901
 	github.com/tkrajina/gpxgo v1.2.1
 	github.com/urfave/cli/v2 v2.11.2

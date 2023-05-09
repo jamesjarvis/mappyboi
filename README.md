@@ -8,7 +8,7 @@ You can specify multiple folders of gpx files (for example if you have a strava 
 ## Installation
 
 ```bash
-go install github.com/jamesjarvis/mappyboi
+go install github.com/jamesjarvis/mappyboi/v2
 ```
 
 ## Usage

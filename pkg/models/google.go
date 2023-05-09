@@ -3,10 +3,10 @@ package models
 import "time"
 
 type GoogleData struct {
-	Locations []*Location `json:"locations"`
+	Locations []GoogleLocation `json:"locations"`
 }
 
-type Location struct {
+type GoogleLocation struct {
 	TimestampMs      string            `json:"timestampMs"` // deprecated, changed sometime between January and March 2022.
 	Timestamp        time.Time         `json:"timestamp"`   // added sometime between January and March 2022.
 	LatitudeE7       int64             `json:"latitudeE7"`
