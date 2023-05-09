@@ -1,4 +1,4 @@
-package models
+package google
 
 import "time"
 
