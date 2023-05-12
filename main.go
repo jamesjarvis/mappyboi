@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -17,8 +18,26 @@ var (
 	baseFileFlag = "base_file"
 )
 
+func mustCreateFileIfNotExists(filePath string) {
+	_, err := os.Stat(filePath)
+	if err == nil {
+		return
+	}
+	if !errors.Is(err, os.ErrNotExist) {
+		panic(err)
+	}
+	f, err := os.Create(filePath)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	return
+}
+
 func app(c *cli.Context) error {
 	fmt.Println("Mappyboi " + c.App.Version)
+
+	mustCreateFileIfNotExists(c.Path(baseFileFlag))
 
 	return nil
 }
