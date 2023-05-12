@@ -10,8 +10,8 @@ func GPXPointToGoLocation(gpxPoint *gpx.GPXPoint) types.Location {
 		Time:             gpxPoint.Timestamp,
 		Latitude:         gpxPoint.Latitude,
 		Longitude:        gpxPoint.Longitude,
-		Accuracy:         gpxPoint.HorizontalDilution.Value(),
-		Altitude:         gpxPoint.Elevation.Value(),
-		VerticalAccuracy: gpxPoint.VerticalDilution.Value(),
+		Accuracy:         int(gpxPoint.HorizontalDilution.Value()),
+		Altitude:         int(gpxPoint.Elevation.Value()),
+		VerticalAccuracy: int(gpxPoint.VerticalDilution.Value()),
 	}
 }
