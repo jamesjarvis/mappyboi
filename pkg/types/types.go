@@ -42,6 +42,9 @@ type LocationHistory struct {
 // chronological sorting. If the item already exists within the map, it
 // will be skipped.
 func (lh LocationHistory) Insert(data ...Location) {
+	if lh.seen == nil {
+		lh.seen = map[locationKey]struct{}{}
+	}
 	// TODO(jamesjarvis): perf on this sucks, do better.
 	for _, v := range data {
 		key := locationKey{
