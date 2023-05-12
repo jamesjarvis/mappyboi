@@ -13,6 +13,7 @@ import (
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/gpx"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/maptemplate"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/parser"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/transform"
 	"github.com/urfave/cli/v2"
 )
 
@@ -27,6 +28,8 @@ var (
 	// Output
 	outputTypeFlag = "output_type"
 	outputFileFlag = "output_file"
+	// Transformations
+	outputTransformReducePointsFlag = "output_reduce_points"
 )
 
 type output string
@@ -119,6 +122,18 @@ func app(c *cli.Context) error {
 		log.Printf("Skipping write, as data is unchanged\n")
 	}
 
+	// Run output transformations.
+
+	// Simplify routes to minimise number of points.
+	// Unfortunately leaflet will stack overflow after around 600k points :'(
+	if c.IsSet(outputTransformReducePointsFlag) {
+		minDistance := c.Float64(outputTransformReducePointsFlag)
+		baseLocationHistory, err = transform.ReducePoints(baseLocationHistory, minDistance)
+		if err != nil {
+			return fmt.Errorf("failed to reduce points to %f: %w", minDistance, err)
+		}
+	}
+
 	// Generate output.
 	if c.IsSet(outputTypeFlag) && c.IsSet(outputFileFlag) {
 		log.Printf("Generating output of type %s to %s...\n", c.String(outputTypeFlag), c.Path(outputFileFlag))
@@ -171,6 +186,11 @@ func main() {
 				Aliases:   []string{"of"},
 				Usage:     "Output `FILE` to write to",
 				TakesFile: true,
+			},
+			&cli.Float64Flag{
+				Name:    outputTransformReducePointsFlag,
+				Aliases: []string{"rp"},
+				Usage:   "If you struggle to open the file in a browser due to too many points, reduce the number of points by increasing this value.",
 			},
 			cli.VersionFlag,
 		},
