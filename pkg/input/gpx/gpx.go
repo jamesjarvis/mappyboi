@@ -13,17 +13,17 @@ func (p *GPXFile) String() string {
 	return p.Filepath
 }
 
-func (p *GPXFile) Parse() (types.LocationHistory, error) {
+func (p *GPXFile) Parse() (*types.LocationHistory, error) {
 	g, err := gpx.ParseFile(p.Filepath)
 	if err != nil {
-		return types.LocationHistory{}, err
+		return nil, err
 	}
 
 	// Reduce number of points in GPX track.
 	g.ReduceGpxToSingleTrack()
 
 	// Add to data object.
-	data := types.LocationHistory{
+	data := &types.LocationHistory{
 		Data: make([]types.Location, 0, g.GetTrackPointsNo()),
 	}
 	g.ExecuteOnAllPoints(func(gpxPoint *gpx.GPXPoint) {
