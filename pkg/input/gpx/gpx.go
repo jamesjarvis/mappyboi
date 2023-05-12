@@ -27,7 +27,7 @@ func (p *GPXFile) Parse() (*types.LocationHistory, error) {
 		Data: make([]types.Location, 0, g.GetTrackPointsNo()),
 	}
 	g.ExecuteOnAllPoints(func(gpxPoint *gpx.GPXPoint) {
-		data.Insert(GPXPointToGoLocation(gpxPoint))
+		data.Insert(gpxPointToGoLocation(gpxPoint))
 	})
 
 	return data, nil

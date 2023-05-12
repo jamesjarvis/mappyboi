@@ -5,7 +5,7 @@ import (
 	"github.com/tkrajina/gpxgo/gpx"
 )
 
-func GPXPointToGoLocation(gpxPoint *gpx.GPXPoint) types.Location {
+func gpxPointToGoLocation(gpxPoint *gpx.GPXPoint) types.Location {
 	return types.Location{
 		Time:             gpxPoint.Timestamp,
 		Latitude:         gpxPoint.Latitude,
