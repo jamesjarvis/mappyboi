@@ -44,7 +44,7 @@ func convertFromEncodable(loc encodableLocation) types.Location {
 		panic(err)
 	}
 	return types.Location{
-		Time:             timestamp,
+		Time:             timestamp.UTC(),
 		Latitude:         conversions.E7ToWGS84(loc.LatitudeE7),
 		Longitude:        conversions.E7ToWGS84(loc.LongitudeE7),
 		Altitude:         int(loc.Altitude),
@@ -102,6 +102,7 @@ func WriteBase(filePath string, locationHistory types.LocationHistory) error {
 	defer f.Close()
 
 	jsonEncoder := json.NewEncoder(f)
+	jsonEncoder.SetIndent("", "  ")
 
 	convertedLocationHistory := encodableLocationHistory{}
 	for _, location := range locationHistory.Data {

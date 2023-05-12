@@ -24,7 +24,7 @@ func googleDataToData(gd GoogleData) (*types.LocationHistory, error) {
 			}
 			t = time.Unix(0, ms*int64(time.Millisecond))
 		} else {
-			t = gloc.Timestamp
+			t = gloc.Timestamp.UTC()
 		}
 
 		lh.Insert(types.Location{

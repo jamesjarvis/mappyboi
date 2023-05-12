@@ -24,6 +24,19 @@ type Location struct {
 	VerticalAccuracy int
 }
 
+// cleanupLocation returns the location truncated to the nearest level of accuracy we care about:
+// - time: 1 second
+func cleanupLocation(loc Location) Location {
+	return Location{
+		Time:             loc.Time.Truncate(time.Second).UTC(),
+		Latitude:         loc.Latitude,
+		Longitude:        loc.Longitude,
+		Altitude:         loc.Altitude,
+		Accuracy:         loc.Accuracy,
+		VerticalAccuracy: loc.VerticalAccuracy,
+	}
+}
+
 // locationKey exists only to serve as a map key.
 type locationKey struct {
 	time      time.Time
@@ -47,16 +60,17 @@ func (lh *LocationHistory) Insert(data ...Location) {
 	}
 	// TODO(jamesjarvis): perf on this sucks, do better.
 	for _, v := range data {
+		cleanValue := cleanupLocation(v)
 		key := locationKey{
-			time:      v.Time,
-			latitude:  v.Latitude,
-			longitude: v.Longitude,
+			time:      cleanValue.Time,
+			latitude:  cleanValue.Latitude,
+			longitude: cleanValue.Longitude,
 		}
 		if _, exists := lh.seen[key]; exists {
 			continue
 		}
 		lh.seen[key] = struct{}{}
-		lh.Data = append(lh.Data, v)
+		lh.Data = append(lh.Data, cleanValue)
 	}
 }
 
