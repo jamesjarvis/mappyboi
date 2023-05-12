@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/jamesjarvis/mappyboi/v2/pkg/base"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/google"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/gpx"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/maptemplate"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/parser"
 	"github.com/urfave/cli/v2"
 )
@@ -18,9 +20,20 @@ import (
 var version string
 
 var (
-	baseFileFlag              = "base_file"
+	baseFileFlag = "base_file"
+	// Input
 	googleLocationHistoryFlag = "google_location_history"
 	gpxDirectoryFlag          = "gpx_directory"
+	// Output
+	outputTypeFlag = "output_type"
+	outputFileFlag = "output_file"
+)
+
+type output string
+
+const (
+	output_UNKNOWN output = "UNKNOWN"
+	output_MAP     output = "MAP"
 )
 
 func mustCreateFileIfNotExists(filePath string) {
@@ -37,6 +50,14 @@ func mustCreateFileIfNotExists(filePath string) {
 	}
 	defer f.Close()
 	return
+}
+
+func mustConvertOutputType(o string) output {
+	switch o {
+	case string(output_MAP):
+		return output_MAP
+	}
+	return output_UNKNOWN
 }
 
 func app(c *cli.Context) error {
@@ -98,6 +119,21 @@ func app(c *cli.Context) error {
 		log.Printf("Skipping write, as data is unchanged\n")
 	}
 
+	// Generate output.
+	if c.IsSet(outputTypeFlag) && c.IsSet(outputFileFlag) {
+		log.Printf("Generating output of type %s to %s...\n", c.String(outputTypeFlag), c.Path(outputFileFlag))
+		outputType := mustConvertOutputType(c.String(outputTypeFlag))
+		switch outputType {
+		case output_UNKNOWN:
+			return fmt.Errorf("invalid output type %s", c.String(outputTypeFlag))
+		case output_MAP:
+			err = maptemplate.GenerateHTML(c.Path(outputFileFlag), baseLocationHistory)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -124,6 +160,17 @@ func main() {
 				Aliases:   []string{"gpxd"},
 				Usage:     "GPX `DIRECTORY` to load .gpx files from",
 				TakesFile: false,
+			},
+			&cli.StringFlag{
+				Name:    outputTypeFlag,
+				Aliases: []string{"ot"},
+				Usage:   "Output format, must be one of [MAP]",
+			},
+			&cli.PathFlag{
+				Name:      outputFileFlag,
+				Aliases:   []string{"of"},
+				Usage:     "Output `FILE` to write to",
+				TakesFile: true,
 			},
 			cli.VersionFlag,
 		},

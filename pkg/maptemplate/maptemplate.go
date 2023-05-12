@@ -8,7 +8,7 @@ import (
 
 	_ "embed"
 
-	"github.com/jamesjarvis/mappyboi/pkg/models"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
 )
 
 //go:embed base_page.html
@@ -35,14 +35,14 @@ const maptemplate = `
 
 
     var heat_map = L.heatLayer(
-        [ {{ range .GoLocations }}[{{ .Latitude }},{{ .Longitude }},1],{{ end }} ],
+        [ {{ range .Data }}[{{ .Latitude }},{{ .Longitude }},1],{{ end }} ],
         {"blur": 4, "max": 11560, "maxZoom": 4, "minOpacity": 0.2, "radius": 7}
     ).addTo(mappyboi);
         
 </script>
 `
 
-func GenerateHTML(filepath string, data *models.Data) error {
+func GenerateHTML(filepath string, locationHistory types.LocationHistory) error {
 	tmpl, err := template.New("test").Parse(maptemplate)
 	if err != nil {
 		return fmt.Errorf("failed to parse html template: %w", err)
@@ -61,7 +61,7 @@ func GenerateHTML(filepath string, data *models.Data) error {
 		return fmt.Errorf("failed to write leaflet.js data to output file: %w", err)
 	}
 
-	err = tmpl.Execute(w, data)
+	err = tmpl.Execute(w, locationHistory)
 	if err != nil {
 		return fmt.Errorf("failed to execute html template: %w", err)
 	}
