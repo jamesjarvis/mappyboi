@@ -1,3 +1,6 @@
+/*
+Package types holds generic data models to represent objects used within mappyboi.
+*/
 package types
 
 import (
@@ -9,12 +12,16 @@ import (
 // It is designed to be hashable, for equality comparisons
 // (there is no point holding the same data twice!).
 type Location struct {
-	Time             time.Time
-	Latitude         float64
-	Longitude        float64
-	Accuracy         float64
-	Altitude         float64
-	VerticalAccuracy float64
+	Time time.Time
+	// GPS Coordinates.
+	Latitude  float64
+	Longitude float64
+	// Altitude above the WGS84 reference ellipsoid, in meters.
+	Altitude int
+	// Approximate accuracy radius of the location measurement, in meters.
+	// A lower value means better precision.
+	Accuracy         int
+	VerticalAccuracy int
 }
 
 // locationKey exists only to serve as a map key.
