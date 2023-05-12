@@ -93,6 +93,7 @@ func ReadBase(filePath string) (types.LocationHistory, error) {
 	return convertedLocationHistory, nil
 }
 
+// WriteBase writes the provided locationHistory from memory into the base file.
 func WriteBase(filePath string, locationHistory types.LocationHistory) error {
 	f, err := os.Open(filePath)
 	if err != nil {
