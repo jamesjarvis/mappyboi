@@ -51,9 +51,20 @@ func convertFromEncodable(loc encodableLocation) types.Location {
 	}
 }
 
+func convertToEncodable(loc types.Location) encodableLocation {
+	return encodableLocation{
+		Timestamp:        loc.Time.Format(time.RFC3339),
+		LatitudeE7:       conversions.WGS84ToE7(loc.Latitude),
+		LongitudeE7:      conversions.WGS84ToE7(loc.Longitude),
+		Altitude:         int64(loc.Altitude),
+		Accuracy:         int64(loc.Accuracy),
+		VerticalAccuracy: int64(loc.VerticalAccuracy),
+	}
+}
+
 // ReadBase reads the base file into memory, within types.LocationHistory
-func ReadBase(fileName string) (types.LocationHistory, error) {
-	f, err := os.Open(fileName)
+func ReadBase(filePath string) (types.LocationHistory, error) {
+	f, err := os.Open(filePath)
 	if err != nil {
 		return types.LocationHistory{}, fmt.Errorf("failed to read base: %w", err)
 	}
@@ -75,4 +86,29 @@ func ReadBase(fileName string) (types.LocationHistory, error) {
 	}
 
 	return convertedLocationHistory, nil
+}
+
+func WriteBase(filePath string, locationHistory types.LocationHistory) error {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open base: %w", err)
+	}
+	defer f.Close()
+
+	jsonEncoder := json.NewEncoder(f)
+
+	convertedLocationHistory := encodableLocationHistory{}
+	for _, location := range locationHistory.Data {
+		convertedLocationHistory.Locations = append(
+			convertedLocationHistory.Locations,
+			convertToEncodable(location),
+		)
+	}
+
+	err = jsonEncoder.Encode(convertedLocationHistory)
+	if err != nil {
+		return fmt.Errorf("failed to encode json: %w", err)
+	}
+
+	return nil
 }
