@@ -95,7 +95,7 @@ func ReadBase(filePath string) (types.LocationHistory, error) {
 
 // WriteBase writes the provided locationHistory from memory into the base file.
 func WriteBase(filePath string, locationHistory types.LocationHistory) error {
-	f, err := os.Open(filePath)
+	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open base: %w", err)
 	}

@@ -51,13 +51,13 @@ func app(c *cli.Context) error {
 	log.Printf("Loaded Base file from %s, %d entries\n", c.Path(baseFileFlag), len(baseLocationHistory.Data))
 
 	// Parse additional files and fold back into base.
-	{
-		var parsers []parser.Parser
-		if c.IsSet(googleLocationHistoryFlag) {
-			parsers = append(parsers, &google.LocationHistory{
-				Filepath: c.Path(googleLocationHistoryFlag),
-			})
-		}
+	var parsers []parser.Parser
+	if c.IsSet(googleLocationHistoryFlag) {
+		parsers = append(parsers, &google.LocationHistory{
+			Filepath: c.Path(googleLocationHistoryFlag),
+		})
+	}
+	if len(parsers) > 0 {
 		log.Printf("Parsing supplied location files...\n")
 		parsedLocationHistory, err := parser.ParseAll(parsers...)
 		if err != nil {
@@ -67,6 +67,14 @@ func app(c *cli.Context) error {
 		baseLocationHistory.Insert(parsedLocationHistory.Data...)
 		log.Printf("Combined all locations into %d entries\n", len(baseLocationHistory.Data))
 	}
+
+	// Write to base.
+	log.Printf("Writing %d entries to Base file %s...", len(baseLocationHistory.Data), c.Path(baseFileFlag))
+	err = base.WriteBase(c.Path(baseFileFlag), baseLocationHistory)
+	if err != nil {
+		return err
+	}
+	log.Printf("Completed writing to Base file %s", c.Path(baseFileFlag))
 
 	return nil
 }
