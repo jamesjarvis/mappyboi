@@ -35,7 +35,7 @@ type encodableLocation struct {
 	// Approximate accuracy radius of the location measurement, in meters.
 	// A lower value means better precision.
 	Accuracy         int64 `json:"accuracy"`
-	VerticalAccuracy int64 `json:"verticalaccuracy"`
+	VerticalAccuracy int64 `json:"verticalAccuracy"`
 }
 
 func convertFromEncodable(loc encodableLocation) types.Location {
