@@ -22,7 +22,7 @@ func FindGPXFiles(root string) ([]*GPXFile, error) {
 			return nil
 		}
 		gpxfiles = append(gpxfiles, &GPXFile{
-			Filepath: path,
+			Filepath: filepath.Join(root, path),
 		})
 		return nil
 	})

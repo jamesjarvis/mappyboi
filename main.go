@@ -9,6 +9,7 @@ import (
 
 	"github.com/jamesjarvis/mappyboi/v2/pkg/base"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/google"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/input/gpx"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/parser"
 	"github.com/urfave/cli/v2"
 )
@@ -19,6 +20,7 @@ var version string
 var (
 	baseFileFlag              = "base_file"
 	googleLocationHistoryFlag = "google_location_history"
+	gpxDirectoryFlag          = "gpx_directory"
 )
 
 func mustCreateFileIfNotExists(filePath string) {
@@ -56,6 +58,15 @@ func app(c *cli.Context) error {
 		parsers = append(parsers, &google.LocationHistory{
 			Filepath: c.Path(googleLocationHistoryFlag),
 		})
+	}
+	if c.IsSet(gpxDirectoryFlag) {
+		gpxs, err := gpx.FindGPXFiles(c.Path(gpxDirectoryFlag))
+		if err != nil {
+			return err
+		}
+		for _, p := range gpxs {
+			parsers = append(parsers, p)
+		}
 	}
 	if len(parsers) > 0 {
 		log.Printf("Parsing supplied location files...\n")
@@ -102,6 +113,12 @@ func main() {
 				Aliases:   []string{"glh"},
 				Usage:     "Google Takeout Location History `FILE`",
 				TakesFile: true,
+			},
+			&cli.PathFlag{
+				Name:      gpxDirectoryFlag,
+				Aliases:   []string{"gpxd"},
+				Usage:     "GPX `DIRECTORY` to load .gpx files from",
+				TakesFile: false,
 			},
 			cli.VersionFlag,
 		},
