@@ -5,12 +5,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jamesjarvis/mappyboi/v2/pkg/conversions"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
 )
-
-func E7ToStandard(e7Pos int64) float64 {
-	return float64(e7Pos) / float64(1e7)
-}
 
 func GoogleDataToData(gd GoogleData) (types.LocationHistory, error) {
 	lh := types.LocationHistory{
@@ -32,11 +29,11 @@ func GoogleDataToData(gd GoogleData) (types.LocationHistory, error) {
 
 		lh.Insert(types.Location{
 			Time:             t,
-			Latitude:         E7ToStandard(gloc.LatitudeE7),
-			Longitude:        E7ToStandard(gloc.LongitudeE7),
-			Accuracy:         float64(gloc.Accuracy),
-			Altitude:         float64(gloc.Altitude),
-			VerticalAccuracy: float64(gloc.VerticalAccuracy),
+			Latitude:         conversions.E7ToWGS84(gloc.LatitudeE7),
+			Longitude:        conversions.E7ToWGS84(gloc.LongitudeE7),
+			Altitude:         gloc.Altitude,
+			Accuracy:         gloc.Accuracy,
+			VerticalAccuracy: gloc.VerticalAccuracy,
 		})
 	}
 
