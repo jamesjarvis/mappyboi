@@ -68,6 +68,12 @@ func app(c *cli.Context) error {
 		log.Printf("Combined all locations into %d entries\n", len(baseLocationHistory.Data))
 	}
 
+	// Cleanup location history.
+	err = baseLocationHistory.Cleanup()
+	if err != nil {
+		return err
+	}
+
 	// Write to base.
 	log.Printf("Writing %d entries to Base file %s...", len(baseLocationHistory.Data), c.Path(baseFileFlag))
 	err = base.WriteBase(c.Path(baseFileFlag), baseLocationHistory)

@@ -38,10 +38,10 @@ type LocationHistory struct {
 }
 
 // Insert modifies the receiver LocationHistory object by combining it
-// with the incoming Location objects. The receiver object will maintain
-// chronological sorting. If the item already exists within the map, it
-// will be skipped.
-func (lh LocationHistory) Insert(data ...Location) {
+// with the incoming Location objects. If the item already exists
+// within the map, it will be skipped. To maintain chronological ordering,
+// one must call .Cleanup() afterwards.
+func (lh *LocationHistory) Insert(data ...Location) {
 	if lh.seen == nil {
 		lh.seen = map[locationKey]struct{}{}
 	}
@@ -56,9 +56,14 @@ func (lh LocationHistory) Insert(data ...Location) {
 			continue
 		}
 		lh.seen[key] = struct{}{}
+		lh.Data = append(lh.Data, v)
 	}
+}
 
+// Cleanup performs cleanup operations on the data, including sorting.
+func (lh *LocationHistory) Cleanup() error {
 	sort.SliceStable(lh.Data, func(i, j int) bool {
 		return lh.Data[i].Time.Before(lh.Data[j].Time)
 	})
+	return nil
 }

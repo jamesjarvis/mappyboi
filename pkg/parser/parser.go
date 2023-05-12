@@ -6,5 +6,5 @@ import (
 
 type Parser interface {
 	String() string
-	Parse() (types.LocationHistory, error)
+	Parse() (*types.LocationHistory, error)
 }

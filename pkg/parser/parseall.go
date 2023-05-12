@@ -17,11 +17,11 @@ type parserWork struct {
 	wg     *sync.WaitGroup
 
 	Error error
-	Data  types.LocationHistory
+	Data  *types.LocationHistory
 }
 
-func ParseAll(parsers ...Parser) (types.LocationHistory, error) {
-	data := types.LocationHistory{}
+func ParseAll(parsers ...Parser) (*types.LocationHistory, error) {
+	data := &types.LocationHistory{}
 
 	workerFunc := func(p *parserWork) error {
 		defer p.wg.Done()
@@ -56,7 +56,7 @@ func ParseAll(parsers ...Parser) (types.LocationHistory, error) {
 		work = append(work, pw)
 		err := dispatcher.Put(context.Background(), pw)
 		if err != nil {
-			return types.LocationHistory{}, fmt.Errorf("failed to schedule parser '%s': %w", p.String(), err)
+			return nil, fmt.Errorf("failed to schedule parser '%s': %w", p.String(), err)
 		}
 	}
 
@@ -65,7 +65,7 @@ func ParseAll(parsers ...Parser) (types.LocationHistory, error) {
 	// Collect results from work.
 	for _, pw := range work {
 		if pw.Error != nil {
-			return types.LocationHistory{}, pw.Error
+			return nil, pw.Error
 		}
 
 		data.Insert(pw.Data.Data...)

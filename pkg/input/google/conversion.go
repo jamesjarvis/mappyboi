@@ -9,8 +9,8 @@ import (
 	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
 )
 
-func GoogleDataToData(gd GoogleData) (types.LocationHistory, error) {
-	lh := types.LocationHistory{
+func googleDataToData(gd GoogleData) (*types.LocationHistory, error) {
+	lh := &types.LocationHistory{
 		Data: make([]types.Location, 0, len(gd.Locations)),
 	}
 
@@ -20,7 +20,7 @@ func GoogleDataToData(gd GoogleData) (types.LocationHistory, error) {
 		if gloc.TimestampMs != "" {
 			ms, err := strconv.ParseInt(gloc.TimestampMs, 10, 64)
 			if err != nil {
-				return types.LocationHistory{}, fmt.Errorf("error parsing timestampMs: %w", err)
+				return nil, fmt.Errorf("error parsing timestampMs: %w", err)
 			}
 			t = time.Unix(0, ms*int64(time.Millisecond))
 		} else {
