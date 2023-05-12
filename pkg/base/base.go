@@ -6,7 +6,9 @@ package base
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -75,6 +77,9 @@ func ReadBase(filePath string) (types.LocationHistory, error) {
 	locationHistory := encodableLocationHistory{}
 	err = jsonDecoder.Decode(&locationHistory)
 	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return types.LocationHistory{}, nil
+		}
 		return types.LocationHistory{}, fmt.Errorf("failed to decode json: %w", err)
 	}
 

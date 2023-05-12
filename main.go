@@ -2,12 +2,14 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 
 	_ "embed"
 
+	"github.com/jamesjarvis/mappyboi/v2/pkg/base"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/input/google"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/parser"
 	"github.com/urfave/cli/v2"
 )
 
@@ -15,7 +17,8 @@ import (
 var version string
 
 var (
-	baseFileFlag = "base_file"
+	baseFileFlag              = "base_file"
+	googleLocationHistoryFlag = "google_location_history"
 )
 
 func mustCreateFileIfNotExists(filePath string) {
@@ -35,9 +38,35 @@ func mustCreateFileIfNotExists(filePath string) {
 }
 
 func app(c *cli.Context) error {
-	fmt.Println("Mappyboi " + c.App.Version)
+	log.Println("Mappyboi " + c.App.Version)
 
 	mustCreateFileIfNotExists(c.Path(baseFileFlag))
+
+	// Setup base.
+	log.Printf("Loading Base file from %s...\n", c.Path(baseFileFlag))
+	baseLocationHistory, err := base.ReadBase(c.Path(baseFileFlag))
+	if err != nil {
+		return err
+	}
+	log.Printf("Loaded Base file from %s, %d entries\n", c.Path(baseFileFlag), len(baseLocationHistory.Data))
+
+	// Parse additional files and fold back into base.
+	{
+		var parsers []parser.Parser
+		if c.IsSet(googleLocationHistoryFlag) {
+			parsers = append(parsers, &google.LocationHistory{
+				Filepath: c.Path(googleLocationHistoryFlag),
+			})
+		}
+		log.Printf("Parsing supplied location files...\n")
+		parsedLocationHistory, err := parser.ParseAll(parsers...)
+		if err != nil {
+			return err
+		}
+		log.Printf("Parsed %d entries from supplied location files\n", len(parsedLocationHistory.Data))
+		baseLocationHistory.Insert(parsedLocationHistory.Data...)
+		log.Printf("Combined all locations into %d entries\n", len(baseLocationHistory.Data))
+	}
 
 	return nil
 }
@@ -53,6 +82,12 @@ func main() {
 				Usage:     "Base location history append only `FILE`",
 				TakesFile: true,
 				Required:  true,
+			},
+			&cli.PathFlag{
+				Name:      googleLocationHistoryFlag,
+				Aliases:   []string{"glh"},
+				Usage:     "Google Takeout Location History `FILE`",
+				TakesFile: true,
 			},
 			cli.VersionFlag,
 		},
