@@ -50,7 +50,8 @@ func app(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Loaded Base file from %s, %d entries\n", c.Path(baseFileFlag), len(baseLocationHistory.Data))
+	originalLength := len(baseLocationHistory.Data)
+	log.Printf("Loaded Base file from %s, %d entries\n", c.Path(baseFileFlag), originalLength)
 
 	// Parse additional files and fold back into base.
 	var parsers []parser.Parser
@@ -76,7 +77,7 @@ func app(c *cli.Context) error {
 		}
 		log.Printf("Parsed %d entries from supplied location files\n", len(parsedLocationHistory.Data))
 		baseLocationHistory.Insert(parsedLocationHistory.Data...)
-		log.Printf("Combined all locations into %d entries\n", len(baseLocationHistory.Data))
+		log.Printf("Combined all locations into %d entries (%d new)\n", len(baseLocationHistory.Data), len(baseLocationHistory.Data)-originalLength)
 	}
 
 	// Cleanup location history.
@@ -86,12 +87,16 @@ func app(c *cli.Context) error {
 	}
 
 	// Write to base.
-	log.Printf("Writing %d entries to Base file %s...", len(baseLocationHistory.Data), c.Path(baseFileFlag))
-	err = base.WriteBase(c.Path(baseFileFlag), baseLocationHistory)
-	if err != nil {
-		return err
+	if len(baseLocationHistory.Data) > originalLength {
+		log.Printf("Writing %d entries to Base file %s...", len(baseLocationHistory.Data), c.Path(baseFileFlag))
+		err = base.WriteBase(c.Path(baseFileFlag), baseLocationHistory)
+		if err != nil {
+			return err
+		}
+		log.Printf("Completed writing to Base file %s", c.Path(baseFileFlag))
+	} else {
+		log.Printf("Skipping write, as data is unchanged\n")
 	}
-	log.Printf("Completed writing to Base file %s", c.Path(baseFileFlag))
 
 	return nil
 }
