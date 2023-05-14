@@ -8,12 +8,12 @@ You can specify multiple folders of gpx files (for example if you have a strava 
 ## Installation
 
 ```bash
-go install github.com/jamesjarvis/mappyboi
+go install github.com/jamesjarvis/mappyboi/v2
 ```
 
 ## Usage
 
 ```bash
-mappyboi --location_history="/path/to/Location History.json" --gpx="/path/to/workout-routes" --gpx="/other/path/to/workout-routes" --o="heatmap.html"
+mappyboi --base_file all_locations.json --google_location_history="/path/to/Location History.json" --gpx_directory="/path/to/workout-routes" --output_reduce_points 4.5 --output_type MAP --output_file heatmap.html
 open heatmap.html
 ```

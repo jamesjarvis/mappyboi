@@ -1,119 +1,200 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 
 	_ "embed"
 
-	"github.com/jamesjarvis/mappyboi/pkg/conversions"
-	"github.com/jamesjarvis/mappyboi/pkg/maptemplate"
-	"github.com/jamesjarvis/mappyboi/pkg/models"
-	"github.com/jamesjarvis/mappyboi/pkg/parser"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/base"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/input/google"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/input/gpx"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/maptemplate"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/parser"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/transform"
 	"github.com/urfave/cli/v2"
 )
 
 //go:embed VERSION
 var version string
 
-const (
-	googleFlag        = "location_history"
-	gpxFlag           = "gpx_folder"
-	outputFlag        = "output_file"
-	defaultOutputFile = "map.html"
-	minDistanceFlag   = "min_distance"
+var (
+	baseFileFlag = "base_file"
+	// Input
+	googleLocationHistoryFlag = "google_location_history"
+	gpxDirectoryFlag          = "gpx_directory"
+	// Output
+	outputTypeFlag = "output_type"
+	outputFileFlag = "output_file"
+	// Transformations
+	outputTransformReducePointsFlag = "output_reduce_points"
 )
 
-func PrintStats(data *models.Data) {
-	fmt.Printf("Total gps points: %d\n", len(data.GoLocations))
+type output string
+
+const (
+	output_UNKNOWN output = "UNKNOWN"
+	output_MAP     output = "MAP"
+)
+
+func mustCreateFileIfNotExists(filePath string) {
+	_, err := os.Stat(filePath)
+	if err == nil {
+		return
+	}
+	if !errors.Is(err, os.ErrNotExist) {
+		panic(err)
+	}
+	f, err := os.Create(filePath)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	return
+}
+
+func mustConvertOutputType(o string) output {
+	switch o {
+	case string(output_MAP):
+		return output_MAP
+	}
+	return output_UNKNOWN
+}
+
+func app(c *cli.Context) error {
+	log.Println("Mappyboi " + c.App.Version)
+
+	mustCreateFileIfNotExists(c.Path(baseFileFlag))
+
+	// Setup base.
+	log.Printf("Loading Base file from %s...\n", c.Path(baseFileFlag))
+	baseLocationHistory, err := base.ReadBase(c.Path(baseFileFlag))
+	if err != nil {
+		return err
+	}
+	originalLength := len(baseLocationHistory.Data)
+	log.Printf("Loaded Base file from %s, %d entries\n", c.Path(baseFileFlag), originalLength)
+
+	// Parse additional files and fold back into base.
+	var parsers []parser.Parser
+	if c.IsSet(googleLocationHistoryFlag) {
+		parsers = append(parsers, &google.LocationHistory{
+			Filepath: c.Path(googleLocationHistoryFlag),
+		})
+	}
+	if c.IsSet(gpxDirectoryFlag) {
+		gpxs, err := gpx.FindGPXFiles(c.Path(gpxDirectoryFlag))
+		if err != nil {
+			return err
+		}
+		for _, p := range gpxs {
+			parsers = append(parsers, p)
+		}
+	}
+	if len(parsers) > 0 {
+		log.Printf("Parsing supplied location files...\n")
+		parsedLocationHistory, err := parser.ParseAll(parsers...)
+		if err != nil {
+			return err
+		}
+		log.Printf("Parsed %d entries from supplied location files\n", len(parsedLocationHistory.Data))
+		baseLocationHistory.Insert(parsedLocationHistory.Data...)
+		log.Printf("Combined all locations into %d entries (%d new)\n", len(baseLocationHistory.Data), len(baseLocationHistory.Data)-originalLength)
+	}
+
+	// Cleanup location history.
+	err = baseLocationHistory.Cleanup()
+	if err != nil {
+		return err
+	}
+
+	// Write to base.
+	if len(baseLocationHistory.Data) > originalLength {
+		log.Printf("Writing %d entries to Base file %s...", len(baseLocationHistory.Data), c.Path(baseFileFlag))
+		err = base.WriteBase(c.Path(baseFileFlag), baseLocationHistory)
+		if err != nil {
+			return err
+		}
+		log.Printf("Completed writing to Base file %s", c.Path(baseFileFlag))
+	} else {
+		log.Printf("Skipping write, as data is unchanged\n")
+	}
+
+	// Run output transformations.
+
+	// Simplify routes to minimise number of points.
+	// Unfortunately leaflet will stack overflow after around 600k points :'(
+	if c.IsSet(outputTransformReducePointsFlag) {
+		minDistance := c.Float64(outputTransformReducePointsFlag)
+		baseLocationHistory, err = transform.ReducePoints(baseLocationHistory, minDistance)
+		if err != nil {
+			return fmt.Errorf("failed to reduce points to %f: %w", minDistance, err)
+		}
+	}
+
+	// Generate output.
+	if c.IsSet(outputTypeFlag) && c.IsSet(outputFileFlag) {
+		log.Printf("Generating output of type %s to %s...\n", c.String(outputTypeFlag), c.Path(outputFileFlag))
+		outputType := mustConvertOutputType(c.String(outputTypeFlag))
+		switch outputType {
+		case output_UNKNOWN:
+			return fmt.Errorf("invalid output type %s", c.String(outputTypeFlag))
+		case output_MAP:
+			err = maptemplate.GenerateHTML(c.Path(outputFileFlag), baseLocationHistory)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func main() {
 	app := &cli.App{
-		Name:  "mappyboi",
-		Usage: "Make a heatmap out of Google Takeout / Apple Health exports",
+		Name:  "mappyboi v2",
+		Usage: "Store all Google Takeout / Apple Health exports and transform to custom outputs",
 		Flags: []cli.Flag{
 			&cli.PathFlag{
-				Name:      googleFlag,
-				Aliases:   []string{"lh"},
-				Usage:     "Load Google Location History from `FILE`",
+				Name:      baseFileFlag,
+				Aliases:   []string{"base"},
+				Usage:     "Base location history append only `FILE`",
 				TakesFile: true,
-			},
-			&cli.StringSliceFlag{
-				Name:    gpxFlag,
-				Aliases: []string{"gpx"},
-				Usage:   "Load GPX files from `FOLDER`",
+				Required:  true,
 			},
 			&cli.PathFlag{
-				Name:      outputFlag,
-				Aliases:   []string{"o"},
-				Usage:     "Output `FILE` to export heatmap to. Must be .html format",
+				Name:      googleLocationHistoryFlag,
+				Aliases:   []string{"glh"},
+				Usage:     "Google Takeout Location History `FILE`",
+				TakesFile: true,
+			},
+			&cli.PathFlag{
+				Name:      gpxDirectoryFlag,
+				Aliases:   []string{"gpxd"},
+				Usage:     "GPX `DIRECTORY` to load .gpx files from",
+				TakesFile: false,
+			},
+			&cli.StringFlag{
+				Name:    outputTypeFlag,
+				Aliases: []string{"ot"},
+				Usage:   "Output format, must be one of [MAP]",
+			},
+			&cli.PathFlag{
+				Name:      outputFileFlag,
+				Aliases:   []string{"of"},
+				Usage:     "Output `FILE` to write to",
 				TakesFile: true,
 			},
 			&cli.Float64Flag{
-				Name:    minDistanceFlag,
-				Aliases: []string{"min"},
+				Name:    outputTransformReducePointsFlag,
+				Aliases: []string{"rp"},
 				Usage:   "If you struggle to open the file in a browser due to too many points, reduce the number of points by increasing this value.",
 			},
 			cli.VersionFlag,
 		},
-		Action: func(c *cli.Context) error {
-			fmt.Println("Mappyboi " + c.App.Version)
-
-			// Locate data from flags
-			parsers := []parser.Parser{}
-			if c.IsSet(googleFlag) {
-				parsers = append(parsers, &parser.GoogleLocationHistory{
-					Filepath: c.Path(googleFlag),
-				})
-			}
-			if c.IsSet(gpxFlag) {
-				gpxs := c.StringSlice(gpxFlag)
-				for _, g := range gpxs {
-					gpxs, err := parser.FindGPXFiles(g)
-					if err != nil {
-						return fmt.Errorf("error finding gpx files for %s: %w", g, err)
-					}
-					for _, p := range gpxs {
-						parsers = append(parsers, p)
-					}
-				}
-			}
-
-			// Exit early if no data passed in
-			if len(parsers) == 0 {
-				fmt.Println("You need some data for a heatmap, silly!")
-				return nil
-			}
-
-			// Get the output file path
-			outputPath := defaultOutputFile
-			if c.IsSet(outputFlag) {
-				outputPath = c.Path(outputFlag)
-			}
-
-			// mmm consume the data
-			allData, err := parser.ParseAll(parsers...)
-			if err != nil {
-				return fmt.Errorf("error parsing data: %w", err)
-			}
-
-			// Simplify routes to minimise number of points.
-			// Unfortunately leaflet will stack overflow after around 600k points :'(
-
-			if c.IsSet(minDistanceFlag) {
-				minDistance := c.Float64(minDistanceFlag)
-				allData, err = conversions.ReducePoints(allData, minDistance)
-				if err != nil {
-					return fmt.Errorf("failed to reduce points to %f: %w", minDistance, err)
-				}
-			}
-
-			PrintStats(allData)
-
-			return maptemplate.GenerateHTML(outputPath, allData)
-		},
+		Action: app,
 	}
 
 	app.Version = version

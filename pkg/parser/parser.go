@@ -1,69 +1,10 @@
 package parser
 
 import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/jamesjarvis/mappyboi/pkg/conversions"
-	"github.com/jamesjarvis/mappyboi/pkg/models"
-	"github.com/tkrajina/gpxgo/gpx"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
 )
 
 type Parser interface {
 	String() string
-	Parse() (*models.Data, error)
-}
-
-type GoogleLocationHistory struct {
-	Filepath string
-}
-
-func (p *GoogleLocationHistory) String() string {
-	return p.Filepath
-}
-
-func (p *GoogleLocationHistory) Parse() (*models.Data, error) {
-	var data models.GoogleData
-
-	file, err := Load(p.Filepath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode json file '%s': %w", p.Filepath, err)
-	}
-
-	return conversions.GoogleDataToData(&data)
-}
-
-type GPXFile struct {
-	Filepath string
-}
-
-func (p *GPXFile) String() string {
-	return p.Filepath
-}
-
-func (p *GPXFile) Parse() (*models.Data, error) {
-	g, err := gpx.ParseFile(p.Filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	// Reduce number of points in GPX track.
-	g.ReduceGpxToSingleTrack()
-
-	// Add to data object.
-	data := &models.Data{
-		GoLocations: make([]*models.GoLocation, 0, g.GetTrackPointsNo()),
-	}
-	g.ExecuteOnAllPoints(func(gpxPoint *gpx.GPXPoint) {
-		data.GoLocations = append(data.GoLocations, conversions.GPXPointToGoLocation(gpxPoint))
-	})
-
-	return data, nil
+	Parse() (*types.LocationHistory, error)
 }
