@@ -12,8 +12,8 @@ github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQD
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/tkrajina/gpxgo v1.2.1 h1:MJJtT4Re5btDGg89brFDrUP3EWz+cBmyo8pQwV0ZOak=
-github.com/tkrajina/gpxgo v1.2.1/go.mod h1:795sjVRFo5wWyN6oOZp0RYienGGBJjpAlgOz2nCngA0=
+github.com/tkrajina/gpxgo v1.3.0 h1:rXqIey0Mc6wOvEoKHEnhZG6Kgxq/vQsOUs7/AME128Q=
+github.com/tkrajina/gpxgo v1.3.0/go.mod h1:795sjVRFo5wWyN6oOZp0RYienGGBJjpAlgOz2nCngA0=
 github.com/urfave/cli/v2 v2.25.3 h1:VJkt6wvEBOoSjPFQvOkv6iWIrsJyCrKGtCtxXWwmGeY=
 github.com/urfave/cli/v2 v2.25.3/go.mod h1:GHupkWPMM0M/sj1a2b4wUrWBPzazNrIjouW6fmdJLxc=
 github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 h1:bAn7/zixMGCfxrRTfdpNzjtPYqr8smhKouy9mxVdGPU=
