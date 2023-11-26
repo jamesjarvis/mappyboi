@@ -5,11 +5,13 @@ from the base location history file.
 package base
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/jamesjarvis/mappyboi/v2/pkg/conversions"
@@ -72,7 +74,23 @@ func ReadBase(filePath string) (types.LocationHistory, error) {
 	}
 	defer f.Close()
 
-	jsonDecoder := json.NewDecoder(f)
+	var baseReader io.Reader
+	if filepath.Ext(filePath) == ".gz" {
+		gzipReader, err := gzip.NewReader(f)
+		if errors.Is(err, io.EOF) {
+			// Brand new file.
+			return types.LocationHistory{}, nil
+		}
+		if err != nil {
+			return types.LocationHistory{}, fmt.Errorf("failed to gunzip base: %w", err)
+		}
+		defer gzipReader.Close()
+		baseReader = gzipReader
+	} else {
+		baseReader = f
+	}
+
+	jsonDecoder := json.NewDecoder(baseReader)
 
 	locationHistory := encodableLocationHistory{}
 	err = jsonDecoder.Decode(&locationHistory)
@@ -101,7 +119,17 @@ func WriteBase(filePath string, locationHistory types.LocationHistory) error {
 	}
 	defer f.Close()
 
-	jsonEncoder := json.NewEncoder(f)
+	var baseWriter io.Writer
+	if filepath.Ext(filePath) == ".gz" {
+		gzipWriter := gzip.NewWriter(f)
+		defer gzipWriter.Flush()
+		defer gzipWriter.Close()
+		baseWriter = gzipWriter
+	} else {
+		baseWriter = f
+	}
+
+	jsonEncoder := json.NewEncoder(baseWriter)
 	jsonEncoder.SetIndent("", "  ")
 
 	convertedLocationHistory := encodableLocationHistory{}
