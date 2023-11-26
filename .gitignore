@@ -18,3 +18,5 @@
 
 map.html
 example.json
+temp/
+.DS_Store
