@@ -14,6 +14,6 @@ go install github.com/jamesjarvis/mappyboi/v2
 ## Usage
 
 ```bash
-mappyboi --base_file all_locations.json --google_location_history="/path/to/Location History.json" --gpx_directory="/path/to/workout-routes" --output_reduce_points 4.5 --output_type MAP --output_file heatmap.html
+mappyboi --base_file all_locations.json --google_location_history="/path/to/Location History.json" --gpx_directory="/path/to/workout-routes" --fit_directory="/path/to/workout-routes" --output_reduce_points 4.5 --output_randomise_points --output_type MAP --output_file heatmap.html
 open heatmap.html
 ```
