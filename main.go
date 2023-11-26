@@ -55,7 +55,6 @@ func mustCreateFileIfNotExists(filePath string) {
 		panic(err)
 	}
 	defer f.Close()
-	return
 }
 
 func mustConvertOutputType(o string) output {
@@ -179,7 +178,7 @@ func main() {
 			&cli.PathFlag{
 				Name:      baseFileFlag,
 				Aliases:   []string{"base"},
-				Usage:     "Base location history append only `FILE`",
+				Usage:     "Base location history append only `FILE`, in .json or .json.gz",
 				TakesFile: true,
 				Required:  true,
 			},

@@ -31,7 +31,7 @@ func (p *FitFile) Parse() (*types.LocationHistory, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer file.Close()
+		defer gzipReader.Close()
 		fitReader = gzipReader
 	} else {
 		fitReader = file
