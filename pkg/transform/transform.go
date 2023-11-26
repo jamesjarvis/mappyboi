@@ -2,6 +2,7 @@ package transform
 
 import (
 	"log"
+	"math/rand"
 	"sort"
 
 	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
@@ -62,4 +63,12 @@ func ReducePoints(locs types.LocationHistory, minDistance float64) (types.Locati
 	}
 
 	return newData, nil
+}
+
+func RandomisePoints(locs types.LocationHistory) (types.LocationHistory, error) {
+	rand.Shuffle(len(locs.Data), func(i, j int) {
+		locs.Data[i], locs.Data[j] = locs.Data[j], locs.Data[i]
+	})
+	log.Printf("Shuffled order of %d points", len(locs.Data))
+	return locs, nil
 }

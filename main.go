@@ -32,6 +32,7 @@ var (
 	outputFileFlag = "output_file"
 	// Transformations
 	outputTransformReducePointsFlag = "output_reduce_points"
+	outputRandomisePoints           = "output_randomise_points"
 )
 
 type output string
@@ -144,6 +145,13 @@ func app(c *cli.Context) error {
 			return fmt.Errorf("failed to reduce points to %f: %w", minDistance, err)
 		}
 	}
+	// Randomise output.
+	if c.IsSet(outputRandomisePoints) {
+		baseLocationHistory, err = transform.RandomisePoints(baseLocationHistory)
+		if err != nil {
+			return fmt.Errorf("failed to shuffle points: %w", err)
+		}
+	}
 
 	// Generate output.
 	if c.IsSet(outputTypeFlag) && c.IsSet(outputFileFlag) {
@@ -208,6 +216,11 @@ func main() {
 				Name:    outputTransformReducePointsFlag,
 				Aliases: []string{"rp"},
 				Usage:   "If you struggle to open the file in a browser due to too many points, reduce the number of points by increasing this value.",
+			},
+			&cli.BoolFlag{
+				Name:    outputRandomisePoints,
+				Aliases: []string{"rand"},
+				Usage:   "If you want to export the view of the points, but otherwise randomise the data to prevent perfect tracking, this will randomise the order.",
 			},
 			cli.VersionFlag,
 		},
