@@ -1,6 +1,8 @@
 package fit
 
 import (
+	"compress/gzip"
+	"io"
 	"os"
 
 	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
@@ -23,8 +25,20 @@ func (p *FitFile) Parse() (*types.LocationHistory, error) {
 	}
 	defer file.Close()
 
+	var fitReader io.Reader
+	if p.Compressed {
+		gzipReader, err := gzip.NewReader(file)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+		fitReader = gzipReader
+	} else {
+		fitReader = file
+	}
+
 	// Decode .fit file.
-	fitFile, err := fit.Decode(file)
+	fitFile, err := fit.Decode(fitReader)
 	if err != nil {
 		return nil, err
 	}
