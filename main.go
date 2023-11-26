@@ -9,6 +9,7 @@ import (
 	_ "embed"
 
 	"github.com/jamesjarvis/mappyboi/v2/pkg/base"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/input/fit"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/google"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/gpx"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/maptemplate"
@@ -25,6 +26,7 @@ var (
 	// Input
 	googleLocationHistoryFlag = "google_location_history"
 	gpxDirectoryFlag          = "gpx_directory"
+	fitDirectoryFlag          = "fit_directory"
 	// Output
 	outputTypeFlag = "output_type"
 	outputFileFlag = "output_file"
@@ -90,6 +92,15 @@ func app(c *cli.Context) error {
 			return err
 		}
 		for _, p := range gpxs {
+			parsers = append(parsers, p)
+		}
+	}
+	if c.IsSet(fitDirectoryFlag) {
+		fits, err := fit.FindFitFiles(c.Path(fitDirectoryFlag))
+		if err != nil {
+			return err
+		}
+		for _, p := range fits {
 			parsers = append(parsers, p)
 		}
 	}
@@ -174,6 +185,12 @@ func main() {
 				Name:      gpxDirectoryFlag,
 				Aliases:   []string{"gpxd"},
 				Usage:     "GPX `DIRECTORY` to load .gpx files from",
+				TakesFile: false,
+			},
+			&cli.PathFlag{
+				Name:      fitDirectoryFlag,
+				Aliases:   []string{"fitd"},
+				Usage:     "FIT `DIRECTORY` to load .fit files from",
 				TakesFile: false,
 			},
 			&cli.StringFlag{
