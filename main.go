@@ -12,6 +12,7 @@ import (
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/fit"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/google"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/gpx"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/input/polarsteps"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/maptemplate"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/parser"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/transform"
@@ -27,6 +28,7 @@ var (
 	googleLocationHistoryFlag = "google_location_history"
 	gpxDirectoryFlag          = "gpx_directory"
 	fitDirectoryFlag          = "fit_directory"
+	polarstepDirectoryFlag    = "polarstep_directory"
 	// Output
 	outputTypeFlag = "output_type"
 	outputFileFlag = "output_file"
@@ -101,6 +103,15 @@ func app(c *cli.Context) error {
 			return err
 		}
 		for _, p := range fits {
+			parsers = append(parsers, p)
+		}
+	}
+	if c.IsSet(polarstepDirectoryFlag) {
+		psteps, err := polarsteps.FindPolarstepsFiles(c.Path(polarstepDirectoryFlag))
+		if err != nil {
+			return err
+		}
+		for _, p := range psteps {
 			parsers = append(parsers, p)
 		}
 	}
@@ -198,6 +209,12 @@ func main() {
 				Name:      fitDirectoryFlag,
 				Aliases:   []string{"fitd"},
 				Usage:     "FIT `DIRECTORY` to load .fit files from",
+				TakesFile: false,
+			},
+			&cli.PathFlag{
+				Name:      polarstepDirectoryFlag,
+				Aliases:   []string{"pstepd"},
+				Usage:     "Polarstep `DIRECTORY` to load locations.json files from",
 				TakesFile: false,
 			},
 			&cli.StringFlag{
