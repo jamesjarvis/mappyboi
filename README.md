@@ -22,6 +22,16 @@ go install github.com/jamesjarvis/mappyboi/v2
 ## Usage
 
 ```bash
-mappyboi --base_file all_locations.json --google_location_history="/path/to/Location History.json" --gpx_directory="/path/to/workout-routes" --fit_directory="/path/to/workout-routes" --polarstep_directory="/path/to/polarsteps" --output_reduce_points 10 --output_randomise_points --output_type MAP --output_file heatmap.html
+mappyboi \
+  --base_file all_locations.json \
+  --google_location_history="/path/to/Location History.json" \
+  --gpx_directory="/path/to/workout-routes" \
+  --fit_directory="/path/to/workout-routes" \
+  --polarstep_directory="/path/to/polarsteps" \
+  --output_reduce_points 10 --output_randomise_points \
+  --output_filter_start_date="2024-01-01T00:00:01Z"
+  --output_filter_end_date="2024-03-01T00:00:01Z"
+  --output_type MAP \
+  --output_file heatmap.html
 open heatmap.html
 ```

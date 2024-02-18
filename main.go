@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "embed"
 
@@ -35,6 +36,8 @@ var (
 	// Transformations
 	outputTransformReducePointsFlag = "output_reduce_points"
 	outputRandomisePoints           = "output_randomise_points"
+	outputFilterStartDate           = "output_filter_start_date"
+	outputFilterEndDate             = "output_filter_end_date"
 )
 
 type output string
@@ -145,22 +148,30 @@ func app(c *cli.Context) error {
 	}
 
 	// Run output transformations.
-
+	var transformers []transform.Transformer
+	// Simplify routes to only include points on or after the provided date.
+	if c.IsSet(outputFilterStartDate) {
+		t := c.Timestamp(outputFilterStartDate)
+		transformers = append(transformers, transform.WithStartDate(*t))
+	}
+	// Simplify routes to only include points on or before the provided date.
+	if c.IsSet(outputFilterEndDate) {
+		t := c.Timestamp(outputFilterEndDate)
+		transformers = append(transformers, transform.WithEndDate(*t))
+	}
 	// Simplify routes to minimise number of points.
 	// Unfortunately leaflet will stack overflow after around 600k points :'(
 	if c.IsSet(outputTransformReducePointsFlag) {
 		minDistance := c.Float64(outputTransformReducePointsFlag)
-		baseLocationHistory, err = transform.ReducePoints(baseLocationHistory, minDistance)
-		if err != nil {
-			return fmt.Errorf("failed to reduce points to %f: %w", minDistance, err)
-		}
+		transformers = append(transformers, transform.WithMinimumDistance(minDistance))
 	}
 	// Randomise output.
 	if c.IsSet(outputRandomisePoints) {
-		baseLocationHistory, err = transform.RandomisePoints(baseLocationHistory)
-		if err != nil {
-			return fmt.Errorf("failed to shuffle points: %w", err)
-		}
+		transformers = append(transformers, transform.WithRandomOrder())
+	}
+	baseLocationHistory, err = transform.ProcessPoints(baseLocationHistory, transformers...)
+	if err != nil {
+		return fmt.Errorf("error transforming points: %w", err)
 	}
 
 	// Generate output.
@@ -237,6 +248,18 @@ func main() {
 				Name:    outputRandomisePoints,
 				Aliases: []string{"rand"},
 				Usage:   "If you want to export the view of the points, but otherwise randomise the data to prevent perfect tracking, this will randomise the order.",
+			},
+			&cli.TimestampFlag{
+				Name:    outputFilterStartDate,
+				Layout:  time.RFC3339,
+				Aliases: []string{"from"},
+				Usage:   "To filter the output to only include points on or after the provided timestamp",
+			},
+			&cli.TimestampFlag{
+				Name:    outputFilterEndDate,
+				Layout:  time.RFC3339,
+				Aliases: []string{"to"},
+				Usage:   "To filter the output to only include points on or before the provided timestamp",
 			},
 			cli.VersionFlag,
 		},
