@@ -96,13 +96,13 @@ func WithMinimumDistance(minDistance float64) Transformer {
 // WithRandomOrder beforehand.
 func WithStartDate(startDate time.Time) Transformer {
 	return func(lh types.LocationHistory) (types.LocationHistory, error) {
-		log.Printf("Starting trimming of %d points from %s", len(lh.Data), startDate.Format(time.DateOnly))
+		log.Printf("Starting trimming of %d points from %s", len(lh.Data), startDate.Format(time.RFC3339))
 		index := sort.Search(len(lh.Data), func(i int) bool {
 			return lh.Data[i].Time.After(startDate) || lh.Data[i].Time.Equal(startDate)
 		})
 		log.Printf("Trimming from %s", lh.Data[index].Time.Format(time.RFC3339))
 		lh.Data = lh.Data[index:]
-		log.Printf("Trimmed %d points from %s", len(lh.Data), startDate.Format(time.DateOnly))
+		log.Printf("Trimmed %d points from %s", len(lh.Data), startDate.Format(time.RFC3339))
 		return lh, nil
 	}
 }
@@ -112,13 +112,13 @@ func WithStartDate(startDate time.Time) Transformer {
 // WithRandomOrder beforehand.
 func WithEndDate(endDate time.Time) Transformer {
 	return func(lh types.LocationHistory) (types.LocationHistory, error) {
-		log.Printf("Starting trimming of %d points until %s", len(lh.Data), endDate.Format(time.DateOnly))
+		log.Printf("Starting trimming of %d points until %s", len(lh.Data), endDate.Format(time.RFC3339))
 		index := sort.Search(len(lh.Data), func(i int) bool {
 			return lh.Data[i].Time.After(endDate)
 		})
 		log.Printf("Trimming until %s", lh.Data[index].Time.Format(time.RFC3339))
 		lh.Data = lh.Data[:index]
-		log.Printf("Trimmed %d points until %s", len(lh.Data), endDate.Format(time.DateOnly))
+		log.Printf("Trimmed %d points until %s", len(lh.Data), endDate.Format(time.RFC3339))
 		return lh, nil
 	}
 }

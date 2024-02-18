@@ -157,8 +157,7 @@ func app(c *cli.Context) error {
 	// Simplify routes to only include points on or before the provided date.
 	if c.IsSet(outputFilterEndDate) {
 		t := c.Timestamp(outputFilterEndDate)
-		endDate := t.AddDate(0, 0, 1)
-		transformers = append(transformers, transform.WithEndDate(endDate))
+		transformers = append(transformers, transform.WithEndDate(*t))
 	}
 	// Simplify routes to minimise number of points.
 	// Unfortunately leaflet will stack overflow after around 600k points :'(
@@ -252,13 +251,13 @@ func main() {
 			},
 			&cli.TimestampFlag{
 				Name:    outputFilterStartDate,
-				Layout:  time.DateOnly,
+				Layout:  time.RFC3339,
 				Aliases: []string{"from"},
 				Usage:   "To filter the output to only include points on or after the provided timestamp",
 			},
 			&cli.TimestampFlag{
 				Name:    outputFilterEndDate,
-				Layout:  time.DateOnly,
+				Layout:  time.RFC3339,
 				Aliases: []string{"to"},
 				Usage:   "To filter the output to only include points on or before the provided timestamp",
 			},
