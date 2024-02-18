@@ -45,6 +45,9 @@ func ProcessPoints(
 	transformers ...Transformer,
 ) (types.LocationHistory, error) {
 	var err error
+	if err = locs.Cleanup(); err != nil {
+		return locs, err
+	}
 	for _, transformer := range transformers {
 		locs, err = transformer(locs)
 		if err != nil {
@@ -95,8 +98,9 @@ func WithStartDate(startDate time.Time) Transformer {
 	return func(lh types.LocationHistory) (types.LocationHistory, error) {
 		log.Printf("Starting trimming of %d points from %s", len(lh.Data), startDate.Format(time.DateOnly))
 		index := sort.Search(len(lh.Data), func(i int) bool {
-			return startDate.After(lh.Data[i].Time)
+			return lh.Data[i].Time.After(startDate) || lh.Data[i].Time.Equal(startDate)
 		})
+		log.Printf("Trimming from %s", lh.Data[index].Time.Format(time.RFC3339))
 		lh.Data = lh.Data[index:]
 		log.Printf("Trimmed %d points from %s", len(lh.Data), startDate.Format(time.DateOnly))
 		return lh, nil
@@ -110,8 +114,9 @@ func WithEndDate(endDate time.Time) Transformer {
 	return func(lh types.LocationHistory) (types.LocationHistory, error) {
 		log.Printf("Starting trimming of %d points until %s", len(lh.Data), endDate.Format(time.DateOnly))
 		index := sort.Search(len(lh.Data), func(i int) bool {
-			return endDate.Before(lh.Data[i].Time)
+			return lh.Data[i].Time.After(endDate)
 		})
+		log.Printf("Trimming until %s", lh.Data[index].Time.Format(time.RFC3339))
 		lh.Data = lh.Data[:index]
 		log.Printf("Trimmed %d points until %s", len(lh.Data), endDate.Format(time.DateOnly))
 		return lh, nil
