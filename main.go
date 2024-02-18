@@ -169,7 +169,7 @@ func app(c *cli.Context) error {
 	if c.IsSet(outputRandomisePoints) {
 		transformers = append(transformers, transform.WithRandomOrder())
 	}
-	err = transform.ProcessPoints(baseLocationHistory, transformers...)
+	baseLocationHistory, err = transform.ProcessPoints(baseLocationHistory, transformers...)
 	if err != nil {
 		return fmt.Errorf("error transforming points: %w", err)
 	}

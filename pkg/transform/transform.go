@@ -36,29 +36,29 @@ func goLocationToGPXPoint(goLocation types.Location) gpx.GPXPoint {
 
 // Transformer receives a location history, applies a given transformation, and returns
 // an error if encountered.
-type Transformer func(types.LocationHistory) error
+type Transformer func(types.LocationHistory) (types.LocationHistory, error)
 
 // ProcessPoints applies the provided transformers to the provided location history points.
 // It returns the transformed location history, or an error if encountered.
 func ProcessPoints(
 	locs types.LocationHistory,
 	transformers ...Transformer,
-) error {
+) (types.LocationHistory, error) {
 	var err error
 	for _, transformer := range transformers {
-		err = transformer(locs)
+		locs, err = transformer(locs)
 		if err != nil {
-			return err
+			return types.LocationHistory{}, err
 		}
 	}
-	return nil
+	return locs, nil
 }
 
 // WithMinimumDistance returns a transformer that reduces the location history points, by enforcing a minimum distance between points.
 // Note that this only reduces chronological points at the moment, and multiple overlapping points that are not sequential will not be
 // reduced.
 func WithMinimumDistance(minDistance float64) Transformer {
-	return func(lh types.LocationHistory) error {
+	return func(lh types.LocationHistory) (types.LocationHistory, error) {
 		log.Printf("Starting point reduction, %d points with a new mininum distance of %.1fm\n", len(lh.Data), minDistance)
 
 		points := make([]gpx.GPXPoint, 0, len(lh.Data))
@@ -84,21 +84,7 @@ func WithMinimumDistance(minDistance float64) Transformer {
 			newData.Insert(gPXPointToGoLocation(p))
 		}
 
-		lh = newData
-
-		return nil
-	}
-}
-
-// WithRandomOrder randomises the order of the provided points.
-func WithRandomOrder() Transformer {
-	return func(lh types.LocationHistory) error {
-		log.Printf("Starting shuffle of %d points", len(lh.Data))
-		rand.Shuffle(len(lh.Data), func(i, j int) {
-			lh.Data[i], lh.Data[j] = lh.Data[j], lh.Data[i]
-		})
-		log.Printf("Shuffled order of %d points", len(lh.Data))
-		return nil
+		return newData, nil
 	}
 }
 
@@ -106,12 +92,14 @@ func WithRandomOrder() Transformer {
 // The points must be in chronological order, so avoid running
 // WithRandomOrder beforehand.
 func WithStartDate(startDate time.Time) Transformer {
-	return func(lh types.LocationHistory) error {
+	return func(lh types.LocationHistory) (types.LocationHistory, error) {
+		log.Printf("Starting trimming of %d points from %s", len(lh.Data), startDate.Format(time.DateOnly))
 		index := sort.Search(len(lh.Data), func(i int) bool {
 			return startDate.After(lh.Data[i].Time)
 		})
 		lh.Data = lh.Data[index:]
-		return nil
+		log.Printf("Trimmed %d points from %s", len(lh.Data), startDate.Format(time.DateOnly))
+		return lh, nil
 	}
 }
 
@@ -119,11 +107,25 @@ func WithStartDate(startDate time.Time) Transformer {
 // The points must be in chronological order, so avoid running
 // WithRandomOrder beforehand.
 func WithEndDate(endDate time.Time) Transformer {
-	return func(lh types.LocationHistory) error {
+	return func(lh types.LocationHistory) (types.LocationHistory, error) {
+		log.Printf("Starting trimming of %d points until %s", len(lh.Data), endDate.Format(time.DateOnly))
 		index := sort.Search(len(lh.Data), func(i int) bool {
 			return endDate.Before(lh.Data[i].Time)
 		})
 		lh.Data = lh.Data[:index]
-		return nil
+		log.Printf("Trimmed %d points until %s", len(lh.Data), endDate.Format(time.DateOnly))
+		return lh, nil
+	}
+}
+
+// WithRandomOrder randomises the order of the provided points.
+func WithRandomOrder() Transformer {
+	return func(lh types.LocationHistory) (types.LocationHistory, error) {
+		log.Printf("Starting shuffle of %d points", len(lh.Data))
+		rand.Shuffle(len(lh.Data), func(i, j int) {
+			lh.Data[i], lh.Data[j] = lh.Data[j], lh.Data[i]
+		})
+		log.Printf("Shuffled order of %d points", len(lh.Data))
+		return lh, nil
 	}
 }
