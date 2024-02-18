@@ -145,22 +145,20 @@ func app(c *cli.Context) error {
 	}
 
 	// Run output transformations.
-
+	var transformers []transform.Transformer
 	// Simplify routes to minimise number of points.
 	// Unfortunately leaflet will stack overflow after around 600k points :'(
 	if c.IsSet(outputTransformReducePointsFlag) {
 		minDistance := c.Float64(outputTransformReducePointsFlag)
-		baseLocationHistory, err = transform.ReducePoints(baseLocationHistory, minDistance)
-		if err != nil {
-			return fmt.Errorf("failed to reduce points to %f: %w", minDistance, err)
-		}
+		transformers = append(transformers, transform.WithMinimumDistance(minDistance))
 	}
 	// Randomise output.
 	if c.IsSet(outputRandomisePoints) {
-		baseLocationHistory, err = transform.RandomisePoints(baseLocationHistory)
-		if err != nil {
-			return fmt.Errorf("failed to shuffle points: %w", err)
-		}
+		transformers = append(transformers, transform.WithRandomOrder())
+	}
+	err = transform.ProcessPoints(baseLocationHistory, transformers...)
+	if err != nil {
+		return fmt.Errorf("error transforming points: %w", err)
 	}
 
 	// Generate output.
