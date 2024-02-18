@@ -4,6 +4,7 @@ import (
 	"log"
 	"math/rand"
 	"sort"
+	"time"
 
 	"github.com/jamesjarvis/mappyboi/v2/pkg/types"
 	"github.com/tkrajina/gpxgo/gpx"
@@ -58,7 +59,7 @@ func ProcessPoints(
 // reduced.
 func WithMinimumDistance(minDistance float64) Transformer {
 	return func(lh types.LocationHistory) error {
-		log.Printf("Starting point reduction, %d points with a new mininum distance of %.1fm\n", len(locs.Data), minDistance)
+		log.Printf("Starting point reduction, %d points with a new mininum distance of %.1fm\n", len(lh.Data), minDistance)
 
 		points := make([]gpx.GPXPoint, 0, len(lh.Data))
 		for _, p := range lh.Data {
@@ -74,7 +75,7 @@ func WithMinimumDistance(minDistance float64) Transformer {
 		}
 		gpxTrack.ReduceTrackPoints(minDistance)
 
-		log.Printf("Reduced minimum distance between points to %.1fm, %d points (%.0f%% reduction)\n", minDistance, len(gpxTrack.Points), (1-(float64(len(gpxTrack.Points))/float64(len(locs.Data))))*100)
+		log.Printf("Reduced minimum distance between points to %.1fm, %d points (%.0f%% reduction)\n", minDistance, len(gpxTrack.Points), (1-(float64(len(gpxTrack.Points))/float64(len(lh.Data))))*100)
 
 		newData := types.LocationHistory{
 			Data: make([]types.Location, 0, len(gpxTrack.Points)),
@@ -97,6 +98,32 @@ func WithRandomOrder() Transformer {
 			lh.Data[i], lh.Data[j] = lh.Data[j], lh.Data[i]
 		})
 		log.Printf("Shuffled order of %d points", len(lh.Data))
+		return nil
+	}
+}
+
+// WithStartDate removes all points before the provided date.
+// The points must be in chronological order, so avoid running
+// WithRandomOrder beforehand.
+func WithStartDate(startDate time.Time) Transformer {
+	return func(lh types.LocationHistory) error {
+		index := sort.Search(len(lh.Data), func(i int) bool {
+			return startDate.After(lh.Data[i].Time)
+		})
+		lh.Data = lh.Data[index:]
+		return nil
+	}
+}
+
+// WithEndDate removes all points after the provided date.
+// The points must be in chronological order, so avoid running
+// WithRandomOrder beforehand.
+func WithEndDate(endDate time.Time) Transformer {
+	return func(lh types.LocationHistory) error {
+		index := sort.Search(len(lh.Data), func(i int) bool {
+			return endDate.Before(lh.Data[i].Time)
+		})
+		lh.Data = lh.Data[:index]
 		return nil
 	}
 }

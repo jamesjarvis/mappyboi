@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "embed"
 
@@ -35,6 +36,8 @@ var (
 	// Transformations
 	outputTransformReducePointsFlag = "output_reduce_points"
 	outputRandomisePoints           = "output_randomise_points"
+	outputFilterStartDate           = "output_filter_start_date"
+	outputFilterEndDate             = "output_filter_end_date"
 )
 
 type output string
@@ -146,6 +149,16 @@ func app(c *cli.Context) error {
 
 	// Run output transformations.
 	var transformers []transform.Transformer
+	// Simplify routes to only include points on or after the provided date.
+	if c.IsSet(outputFilterStartDate) {
+		t := c.Timestamp(outputFilterStartDate)
+		transformers = append(transformers, transform.WithStartDate(*t))
+	}
+	// Simplify routes to only include points on or before the provided date.
+	if c.IsSet(outputFilterEndDate) {
+		t := c.Timestamp(outputFilterEndDate)
+		transformers = append(transformers, transform.WithEndDate(*t))
+	}
 	// Simplify routes to minimise number of points.
 	// Unfortunately leaflet will stack overflow after around 600k points :'(
 	if c.IsSet(outputTransformReducePointsFlag) {
@@ -235,6 +248,18 @@ func main() {
 				Name:    outputRandomisePoints,
 				Aliases: []string{"rand"},
 				Usage:   "If you want to export the view of the points, but otherwise randomise the data to prevent perfect tracking, this will randomise the order.",
+			},
+			&cli.TimestampFlag{
+				Name:    outputFilterStartDate,
+				Layout:  time.DateOnly,
+				Aliases: []string{"from"},
+				Usage:   "To filter the output to only include points on or after the provided timestamp",
+			},
+			&cli.TimestampFlag{
+				Name:    outputFilterEndDate,
+				Layout:  time.DateOnly,
+				Aliases: []string{"to"},
+				Usage:   "To filter the output to only include points on or before the provided timestamp",
 			},
 			cli.VersionFlag,
 		},
