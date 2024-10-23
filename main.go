@@ -200,7 +200,7 @@ func main() {
 			&cli.PathFlag{
 				Name:      baseFileFlag,
 				Aliases:   []string{"base"},
-				Usage:     "Base location history append only `FILE`, in .json or .json.gz",
+				Usage:     "Base location history append only `FILE`, in .json or .json.gz (by suffixing with .gz mappyboi will compress the resulting file, using significantly less storage)",
 				TakesFile: true,
 				Required:  true,
 			},
@@ -231,7 +231,7 @@ func main() {
 			&cli.StringFlag{
 				Name:    outputTypeFlag,
 				Aliases: []string{"ot"},
-				Usage:   "Output format, must be one of [ MAP ], defaults to `MAP` if unspecified",
+				Usage:   "Output format, must be one of [ MAP ]",
 				Value:   string(output_MAP), // Default value of MAP.
 			},
 			&cli.PathFlag{

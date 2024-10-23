@@ -21,6 +21,32 @@ go install github.com/jamesjarvis/mappyboi/v2
 
 ## Usage
 
+```txt
+USAGE:
+   mappyboi v2 [global options] command [command options] [arguments...]
+
+AUTHOR:
+   James Jarvis <git@jamesjarvis.io>
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --base_file FILE, --base FILE                        Base location history append only FILE, in .json or .json.gz (by suffixing with .gz mappyboi will compress the resulting file, using significantly less storage)
+   --google_location_history FILE, --glh FILE           Google Takeout Location History FILE
+   --gpx_directory DIRECTORY, --gpxd DIRECTORY          GPX DIRECTORY to load .gpx files from
+   --fit_directory DIRECTORY, --fitd DIRECTORY          FIT DIRECTORY to load .fit files from
+   --polarstep_directory DIRECTORY, --pstepd DIRECTORY  Polarstep DIRECTORY to load locations.json files from
+   --output_type value, --ot value                      Output format, must be one of [ MAP ] (default: "MAP")
+   --output_file FILE, --of FILE                        Output FILE to write to
+   --output_reduce_points value, --rp value             If you struggle to open the file in a browser due to too many points, reduce the number of points by increasing this value. (default: 0)
+   --output_randomise_points, --rand                    If you want to export the view of the points, but otherwise randomise the data to prevent perfect tracking, this will randomise the order. (default: false)
+   --output_filter_start_date value, --from value       To filter the output to only include points on or after the provided timestamp
+   --output_filter_end_date value, --to value           To filter the output to only include points on or before the provided timestamp
+   --version, -v                                        print the version
+   --help, -h                                           show help
+```
+
 ```bash
 mappyboi \
   --base_file all_locations.json \
