@@ -180,7 +180,7 @@ func app(c *cli.Context) error {
 		outputType := mustConvertOutputType(c.String(outputTypeFlag))
 		switch outputType {
 		case output_UNKNOWN:
-			return fmt.Errorf("invalid output type %s", c.String(outputTypeFlag))
+			return fmt.Errorf("invalid output type %q, valid types are: [ MAP ]", c.String(outputTypeFlag))
 		case output_MAP:
 			err = maptemplate.GenerateHTML(c.Path(outputFileFlag), baseLocationHistory)
 			if err != nil {
@@ -231,7 +231,8 @@ func main() {
 			&cli.StringFlag{
 				Name:    outputTypeFlag,
 				Aliases: []string{"ot"},
-				Usage:   "Output format, must be one of [MAP]",
+				Usage:   "Output format, must be one of [ MAP ], defaults to `MAP` if unspecified",
+				Value:   string(output_MAP), // Default value of MAP.
 			},
 			&cli.PathFlag{
 				Name:      outputFileFlag,
