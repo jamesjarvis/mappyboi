@@ -4,6 +4,7 @@
 
 Generates a heatmap of where you have been, using data from:
 - Google Takeout (Location History)
+- Google Timeline (Location History)
 - Apple Health Export
 - Strava (or other assorted .gpx files)
 - Strava (or other assorted .fit files)
@@ -34,6 +35,7 @@ COMMANDS:
 GLOBAL OPTIONS:
    --base_file FILE, --base FILE                        Base location history append only FILE, in .json or .json.gz (by suffixing with .gz mappyboi will compress the resulting file, using significantly less storage)
    --google_location_history FILE, --glh FILE           Google Takeout Location History FILE
+   --google_timeline FILE, --gtl FILE                   Google Timeline Location History FILE
    --gpx_directory DIRECTORY, --gpxd DIRECTORY          GPX DIRECTORY to load .gpx files from
    --fit_directory DIRECTORY, --fitd DIRECTORY          FIT DIRECTORY to load .fit files from
    --polarstep_directory DIRECTORY, --pstepd DIRECTORY  Polarstep DIRECTORY to load locations.json files from
@@ -51,6 +53,7 @@ GLOBAL OPTIONS:
 mappyboi \
   --base_file all_locations.json \
   --google_location_history="/path/to/Location History.json" \
+  --google_timeline="/path/to/location-history.json" \
   --gpx_directory="/path/to/workout-routes" \
   --fit_directory="/path/to/workout-routes" \
   --polarstep_directory="/path/to/polarsteps" \
