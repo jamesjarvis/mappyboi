@@ -14,6 +14,7 @@ import (
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/google"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/gpx"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/input/polarsteps"
+	"github.com/jamesjarvis/mappyboi/v2/pkg/input/timeline"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/maptemplate"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/parser"
 	"github.com/jamesjarvis/mappyboi/v2/pkg/transform"
@@ -27,6 +28,7 @@ var (
 	baseFileFlag = "base_file"
 	// Input
 	googleLocationHistoryFlag = "google_location_history"
+	googleTimelineFlag        = "google_timeline"
 	gpxDirectoryFlag          = "gpx_directory"
 	fitDirectoryFlag          = "fit_directory"
 	polarstepDirectoryFlag    = "polarstep_directory"
@@ -89,6 +91,11 @@ func app(c *cli.Context) error {
 	if c.IsSet(googleLocationHistoryFlag) {
 		parsers = append(parsers, &google.LocationHistory{
 			Filepath: c.Path(googleLocationHistoryFlag),
+		})
+	}
+	if c.IsSet(googleTimelineFlag) {
+		parsers = append(parsers, &timeline.Timeline{
+			Filepath: c.Path(googleTimelineFlag),
 		})
 	}
 	if c.IsSet(gpxDirectoryFlag) {
@@ -208,6 +215,12 @@ func main() {
 				Name:      googleLocationHistoryFlag,
 				Aliases:   []string{"glh"},
 				Usage:     "Google Takeout Location History `FILE`",
+				TakesFile: true,
+			},
+			&cli.PathFlag{
+				Name:      googleTimelineFlag,
+				Aliases:   []string{"gtl"},
+				Usage:     "Google Timeline Location History `FILE`",
 				TakesFile: true,
 			},
 			&cli.PathFlag{
