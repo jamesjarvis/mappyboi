@@ -155,17 +155,7 @@ func app(c *cli.Context) error {
 	}
 
 	// Run output transformations.
-	var transformers []transform.Transformer
-	// Simplify routes to only include points on or after the provided date.
-	if c.IsSet(outputFilterStartDate) {
-		t := c.Timestamp(outputFilterStartDate)
-		transformers = append(transformers, transform.WithStartDate(*t))
-	}
-	// Simplify routes to only include points on or before the provided date.
-	if c.IsSet(outputFilterEndDate) {
-		t := c.Timestamp(outputFilterEndDate)
-		transformers = append(transformers, transform.WithEndDate(*t))
-	}
+	transformers := dateFilterTransformers(c)
 	// Simplify routes to minimise number of points.
 	// Unfortunately leaflet will stack overflow after around 600k points :'(
 	if c.IsSet(outputTransformReducePointsFlag) {
@@ -203,7 +193,7 @@ func main() {
 	app := &cli.App{
 		Name:  "mappyboi v2",
 		Usage: "Store all Google Takeout / Apple Health exports and transform to custom outputs",
-		Flags: []cli.Flag{
+		Flags: append([]cli.Flag{
 			&cli.PathFlag{
 				Name:      baseFileFlag,
 				Aliases:   []string{"base"},
@@ -263,20 +253,7 @@ func main() {
 				Aliases: []string{"rand"},
 				Usage:   "If you want to export the view of the points, but otherwise randomise the data to prevent perfect tracking, this will randomise the order.",
 			},
-			&cli.TimestampFlag{
-				Name:    outputFilterStartDate,
-				Layout:  time.RFC3339,
-				Aliases: []string{"from"},
-				Usage:   "To filter the output to only include points on or after the provided timestamp",
-			},
-			&cli.TimestampFlag{
-				Name:    outputFilterEndDate,
-				Layout:  time.RFC3339,
-				Aliases: []string{"to"},
-				Usage:   "To filter the output to only include points on or before the provided timestamp",
-			},
-			cli.VersionFlag,
-		},
+		}, append(dateFilterFlags(), cli.VersionFlag)...),
 		Action: app,
 	}
 
@@ -293,4 +270,32 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func dateFilterFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.TimestampFlag{
+			Name:    outputFilterStartDate,
+			Layout:  time.RFC3339,
+			Aliases: []string{"from"},
+			Usage:   "To filter the output to only include points on or after the provided timestamp",
+		},
+		&cli.TimestampFlag{
+			Name:    outputFilterEndDate,
+			Layout:  time.RFC3339,
+			Aliases: []string{"to"},
+			Usage:   "To filter the output to only include points on or before the provided timestamp",
+		},
+	}
+}
+
+func dateFilterTransformers(c *cli.Context) []transform.Transformer {
+	var transformers []transform.Transformer
+	if from := c.Timestamp(outputFilterStartDate); from != nil {
+		transformers = append(transformers, transform.WithStartDate(*from))
+	}
+	if to := c.Timestamp(outputFilterEndDate); to != nil {
+		transformers = append(transformers, transform.WithEndDate(*to))
+	}
+	return transformers
 }
