@@ -2,6 +2,7 @@ package maptemplate
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"text/template"
@@ -35,7 +36,7 @@ const maptemplate = `
 
 
     var heat_map = L.heatLayer(
-        [ {{ range .Data }}[{{ .Latitude }},{{ .Longitude }},1],{{ end }} ],
+        JSON.parse({{ .Points }}),
         {"blur": 4, "max": 11560, "maxZoom": 4, "minOpacity": 0.2, "radius": 7}
     ).addTo(mappyboi);
         
@@ -61,9 +62,30 @@ func GenerateHTML(filepath string, locationHistory types.LocationHistory) error 
 		return fmt.Errorf("failed to write leaflet.js data to output file: %w", err)
 	}
 
-	err = tmpl.Execute(w, locationHistory)
+	points, err := pointsAsJSString(locationHistory)
+	if err != nil {
+		return fmt.Errorf("failed to encode points: %w", err)
+	}
+
+	err = tmpl.Execute(w, struct{ Points string }{points})
 	if err != nil {
 		return fmt.Errorf("failed to execute html template: %w", err)
 	}
 	return nil
+}
+
+func pointsAsJSString(locationHistory types.LocationHistory) (string, error) {
+	points := make([][2]float64, len(locationHistory.Data))
+	for i, loc := range locationHistory.Data {
+		points[i] = [2]float64{loc.Latitude, loc.Longitude}
+	}
+	pointsJSON, err := json.Marshal(points)
+	if err != nil {
+		return "", err
+	}
+	quoted, err := json.Marshal(string(pointsJSON))
+	if err != nil {
+		return "", err
+	}
+	return string(quoted), nil
 }
